@@ -15,5 +15,21 @@
         <p>This is your first screen! You can track your sleep, nutrition, and fitness in one place.</p>
         <a href="/start/">Get Started</a>
     </section>
+
+    <section class="navigation">
+        <h2>Fitness Log</h2>
+        <ul>
+            <li><a href="{% url 'add_fitness_log' %}">Add Fitness Log</a></li>
+            <li><a href="{% url 'view_fitness_logs' %}">View Fitness Logs</a></li>
+        </ul>
+    </section>
+
+    <section class="navigation">
+        <h2>Nutrition Log</h2>
+        <ul>
+            <li><a href="{% url 'add_nutrition' %}">Add Nutrition Log</a></li>
+        </ul>
+    </section>
+
 </body>
 </html>

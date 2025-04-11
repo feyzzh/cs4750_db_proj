@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Fitness Logs</title>
+</head>
+<body>
+    <h1>Your Fitness Logs</h1>
+
+    {% if logs %}
+        <ul>
+            {% for log in logs %}
+                <li>{{ log.start_time }} to {{ log.end_time }} - {{ log.activity }}: {{ log.duration_minutes }} minutes<br>{{ log.description }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No fitness logs found.</p>
+    {% endif %}
+</body>
+</html>
