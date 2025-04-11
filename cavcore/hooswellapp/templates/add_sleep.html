@@ -4,41 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sleep Log</title>
-    <style>
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 8px; }
-    </style>
 </head>
 <body>
     <h1>Add Sleep Log</h1>
-
     <form method="POST" action="{% url 'add_sleep' %}">
         {% csrf_token %}
-        
-        <div class="form-group">
-            <label for="id_start_time">Start Time:</label>
-            {{ form.start_time }}
-        </div>
-        
-        <div class="form-group">
-            <label for="id_end_time">End Time:</label>
-            {{ form.end_time }}
-        </div>
-        
-        <div class="form-group">
-            <label for="id_sleep_quality">Sleep Quality (1-10):</label>
-            {{ form.sleep_quality }}
-        </div>
-        
-        <div class="form-group">
-            <label for="id_description">Description:</label>
-            {{ form.description }}
-        </div>
-
+        {{ form.as_p}}
         <input type="submit" value="Save Sleep Log">
     </form>
-
     <a href="{% url 'home' %}">Back to Home</a>
 </body>
 </html>
