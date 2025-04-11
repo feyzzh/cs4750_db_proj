@@ -10,6 +10,15 @@ class SignupForm(forms.ModelForm):
     class Meta:
         model = Users
         fields = ['first_name', 'last_name', 'email', 'phone_number', 'city', 'state', 'country']
+        email = forms.EmailField(
+            widget=forms.EmailInput(attrs={'placeholder': 'you@virginia.edu'})
+        )
+        widgets = {
+            'phone_number': forms.TextInput(),
+            'city': forms.TextInput(),
+            'state': forms.TextInput(),
+            'country': forms.TextInput(),
+        }
 
     def clean(self):
         cleaned_data = super().clean()
@@ -20,6 +29,15 @@ class SignupForm(forms.ModelForm):
             self.add_error('confirm_password', "Passwords do not match.")
 
         return cleaned_data
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        # if not email.endswith('@virginia.edu'):
+        #     raise forms.ValidationError("Only @virginia.edu email addresses are allowed.")
+
+        if Users.objects.filter(email=email).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
 
 
 class NutritionLogForm(forms.ModelForm):
