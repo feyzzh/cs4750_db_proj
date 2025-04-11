@@ -20,13 +20,13 @@ class SleepLogForm(forms.ModelForm):
     class Meta:
         model = SleepLog
         fields = ['start_time', 'end_time', 'sleep_quality', 'description']
+        widgets = {
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'sleep_quality': forms.TextInput(attrs={'placeholder': '1-10'}),
+            'description': forms.Textarea(attrs={'placeholder': 'Optional description'}),
+        }
         
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields['start_time'].widget = forms.DateTimeInput(attrs={'type': 'datetime-local'})
-        self.fields['end_time'].widget = forms.DateTimeInput(attrs={'type': 'datetime-local'})
-
 class FitnessLogForm(forms.ModelForm):
     class Meta:
         model = FitnessLog
