@@ -33,9 +33,4 @@ def add_fitness_log(request):
     else:
         form = FitnessLogForm()
 
-    return render(request, 'template/add_fitness_log.html', {'form': form})
-
-@login_required
-def view_fitness_logs(request):
-    logs = FitnessLog.objects.filter(user=request.user).order_by('-start_time')
-    return render(request, 'template/view_fitness_logs.html', {'logs': logs})
+    return render(request, 'add_fitness_log.html', {'form': form})
