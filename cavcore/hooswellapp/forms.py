@@ -1,5 +1,5 @@
 from django import forms
-from .models import NutritionLog, Foods
+from .models import NutritionLog, Foods, SleepLog
 from django.utils import timezone
 
 class NutritionLogForm(forms.ModelForm):
@@ -14,3 +14,15 @@ class NutritionLogForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Set the food dropdown with a queryset from the Foods model
         self.fields['food'].queryset = Foods.objects.all()
+
+
+class SleepLogForm(forms.ModelForm):
+    class Meta:
+        model = SleepLog
+        fields = ['start_time', 'end_time', 'sleep_quality', 'description']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['start_time'].widget = forms.DateTimeInput(attrs={'type': 'datetime-local'})
+        self.fields['end_time'].widget = forms.DateTimeInput(attrs={'type': 'datetime-local'})
