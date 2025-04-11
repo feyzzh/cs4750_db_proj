@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import NutritionLogForm, SleepLogForm
-from .models import NutritionLog, SleepLog
+from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm
+from .models import NutritionLog, SleepLog, FitnessLog
 
 # Create your views here.
 def home(request):
@@ -35,3 +35,16 @@ def add_sleep(request):
         form = SleepLogForm()
 
     return render(request, 'add_sleep.html', {'form': form})
+
+def add_fitness_log(request):
+    if request.method == 'POST':
+        form = FitnessLogForm(request.POST)
+        if form.is_valid():
+            fitness_log = form.save(commit=False)
+            fitness_log.user = request.user
+            fitness_log.save()
+            return redirect('view_fitness_logs')
+    else:
+        form = FitnessLogForm()
+
+    return render(request, 'add_fitness_log.html', {'form': form})

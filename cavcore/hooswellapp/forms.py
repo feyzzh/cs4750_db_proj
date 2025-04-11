@@ -1,5 +1,5 @@
 from django import forms
-from .models import NutritionLog, Foods, SleepLog
+from .models import NutritionLog, Foods, SleepLog, FitnessLog
 from django.utils import timezone
 
 class NutritionLogForm(forms.ModelForm):
@@ -27,3 +27,13 @@ class SleepLogForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'placeholder': 'Optional description'}),
         }
         
+class FitnessLogForm(forms.ModelForm):
+    class Meta:
+        model = FitnessLog
+        fields = ['activity', 'start_time', 'end_time', 'description']
+        widgets = {
+            'activity': forms.TextInput(attrs={'placeholder': 'e.g., Running'}),
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'description': forms.Textarea(attrs={'placeholder': 'Optional description'}),
+        }
