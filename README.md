@@ -1,4 +1,4 @@
-# Database Project
+# HoosWell
 HoosWell is an app for UVA students to track their health metrics. Users can log their sleep, nutrition, and fitness activities to see trends in their health and track progress of created goals.
 
 # Build Project
