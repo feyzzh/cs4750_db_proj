@@ -14,7 +14,6 @@
     <form method="POST" action="{% url 'add_nutrition' %}">
         {% csrf_token %}
         
-        <!-- Render form fields -->
         {{ form.as_p }}
 
         <input type="submit" value="Save Nutrition Log">
