@@ -2,7 +2,8 @@
     <h1>Stats Dashboard</h1>
     <!-- Tab Navigation -->
     <div>
-        <button onclick="openTab('nutrition')">Nutrition</button>
+        <button onclick="window.location.href='{% url 'nutri_dash' %}'">Nutrition</button>
+        <!-- <button onclick="openTab('nutrition')">Nutrition</button> -->
         <button onclick="openTab('fitness')">Fitness</button>
         <button onclick="openTab('sleep')">Sleep</button>
     </div>

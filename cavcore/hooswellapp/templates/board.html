@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stats Dashboard</title>
+</head>
+<body>
+    <header>
+        <h1>Dashboard</h1>
+        <!-- Tab Navigation -->
+        <div>
+            <button onclick="window.location.href='{% url 'nutri_dash' %}'">Nutrition</button>
+            <button onclick="window.location.href='{% url 'stats_dashboard' %}'">Fitness</button>
+            <button onclick="window.location.href='{% url 'stats_dashboard' %}'">Sleep</button>
+        </div>
+    </header>
+</body>
+</html>

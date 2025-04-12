@@ -183,20 +183,20 @@ def stats_dashboard(request):
     return render(request, 'stats_dashboard.html', context)
 
 
-# @login_required
-# def dashboard(request):
+@login_required
+def dashboard(request):
 
-#     user_email = request.user.email
-#     try:
-#         user = Users.objects.get(email=user_email)
-#     except Users.DoesNotExist:
-#         return render(request, 'error.html', {'message': 'User not found.'})
+    user_email = request.user.email
+    try:
+        user = Users.objects.get(email=user_email)
+    except Users.DoesNotExist:
+        return render(request, 'error.html', {'message': 'User not found.'})
 
-#     context = {
+    context = {
 
-#     }
+    }
 
-#     return render(request, 'dashboard.html', context)
+    return render(request, 'dashboard.html', context)
 
 from datetime import datetime, timedelta
 from collections import defaultdict
