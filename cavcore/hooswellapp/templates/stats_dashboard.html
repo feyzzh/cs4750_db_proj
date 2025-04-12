@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats Dashboard</title>
+</head>
+<body>
+    <h1>Stats Dashboard</h1>
+
+    <!-- Nutrition Stats -->
+    <section>
+        <h2>Nutrition Stats</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Food</th>
+                    <th>Total Grams Consumed</th>
+                    <!-- <th>Total Entries</th> -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in nutrition_stats %}
+                <tr>
+                    <td>{{ stat.food }}</td>
+                    <td>{{ stat.total_grams }}</td>
+                    <!-- <td>{{ stat.total_entries }}</td> -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Recent Nutrition Logs</h3>
+        <ul>
+            {% for log in nutrition_logs %}
+                <li>{{ log.food.name }}: {{ log.num_grams_consumed }} grams ({{ log.time_of_consumption }})</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <!-- Fitness Stats -->
+    <section>
+        <h2>Fitness Stats</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Activity</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in fitness_stats %}
+                <tr>
+                    <td>{{ stat.activity }}</td>
+                    <td>{{ stat.start_time }}</td>
+                    <td>{{ stat.end_time }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Recent Fitness Logs</h3>
+        <ul>
+            {% for log in fitness_logs %}
+                <li>{{ log.activity }} ({{ log.start_time }} - {{ log.end_time }})</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <!-- Sleep Stats -->
+    <section>
+        <h2>Sleep Stats</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Sleep Quality</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in sleep_stats %}
+                <tr>
+                    <td>{{ stat.start_time }}</td>
+                    <td>{{ stat.end_time }}</td>
+                    <td>{{ stat.sleep_quality }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Recent Sleep Logs</h3>
+        <ul>
+            {% for log in sleep_logs %}
+                <li>{{ log.start_time }} - {{ log.end_time }} (Quality: {{ log.sleep_quality }})</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+</body>
+</html>

@@ -10,6 +10,7 @@ from .models import Users
 from .forms import SignupForm
 from django.contrib import messages
 from django.http import HttpResponse
+from django.db.models import Sum, Avg, Count
 
 # Create your views here.
 def home(request):
@@ -127,3 +128,35 @@ def add_fitness_log(request):
         form = FitnessLogForm()
 
     return render(request, 'add_fitness_log.html', {'form': form})
+
+@login_required
+def stats_dashboard(request):
+    user_email = request.user.email
+
+    try:
+        user = Users.objects.get(email=user_email)
+    except Users.DoesNotExist:
+        return render(request, 'error.html', {'message': 'User not found.'})
+
+    nutrition_logs = NutritionLog.objects.filter(user=user).order_by('-time_of_consumption')
+    nutrition_stats = NutritionLog.objects.filter(user=user).values('food').annotate(
+        total_grams=Sum('num_grams_consumed'),
+        # total_entries=Count('pk'),
+    )
+
+    fitness_logs = FitnessLog.objects.filter(user=user).order_by('-start_time')
+    fitness_stats = FitnessLog.objects.filter(user=user).values('activity', 'start_time', 'end_time')
+
+    sleep_logs = SleepLog.objects.filter(user=user).order_by('-start_time')
+    sleep_stats = SleepLog.objects.filter(user=user).values('start_time', 'end_time', 'sleep_quality')
+
+    context = {
+        'nutrition_logs': nutrition_logs,
+        'nutrition_stats': nutrition_stats,
+        'fitness_logs': fitness_logs,
+        'fitness_stats': fitness_stats,
+        'sleep_logs': sleep_logs,
+        'sleep_stats': sleep_stats,
+    }
+
+    return render(request, 'stats_dashboard.html', context)
