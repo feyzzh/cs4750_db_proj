@@ -1,0 +1,223 @@
+<header>
+    <h1>Dashboard</h1>
+    <!-- Tab Navigation -->
+    <div>
+        <button onclick="openTab('nutrition')">Nutrition</button>
+        <button onclick="openTab('fitness')">Fitness</button>
+        <button onclick="openTab('sleep')">Sleep</button>
+    </div>
+</header>
+
+<body>
+
+<div id="nutrition" class="tab-content">
+    <h2>Nutrition Overview</h2>
+
+    <!-- Summary Cards -->
+    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+        <div style="border: 1px solid #ccc; padding: 10px; flex: 1;">
+            <strong>Selected Date:</strong><br>
+            <input type="date" id="selected-nutrition-date" />
+        </div>
+        
+        <div style="border: 1px solid #ccc; padding: 10px; flex: 1;">
+            <strong>Grams Consumed (Day):</strong>
+            <p id="grams-day"></p>
+        </div>
+        <div style="border: 1px solid #ccc; padding: 10px; flex: 1;">
+            <strong>Grams Consumed (Week):</strong>
+            <p id="grams-week"></p>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between;">
+        <div style="flex: 1; margin-right: 20px;">
+            <!-- Table: Day Logs -->
+            <h3>Food Items Logged on Selected Day</h3>
+            <table border="1" style="width: 100%; margin-bottom: 20px;">
+                <thead>
+                    <tr>
+                        <th>Food</th>
+                        <th>Grams Consumed</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="nutrition-day-table">
+                    <!-- Filled by JS -->
+                </tbody>
+            </table>
+        </div>
+        <div style="flex: 1;">
+            <!-- Table: Week Totals -->
+            <h3>Gram Totals for the Week</h3>
+            <table border="1" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Total Grams</th>
+                    </tr>
+                </thead>
+                <tbody id="nutrition-week-table">
+                    <!-- Filled by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div>
+        <h3>Recent Entries</h3>
+            <table border="1" style="width: 100%; margin-bottom: 20px;">
+                <thead>
+                    <tr>
+                        <th>Date, Time</th>
+                        <!-- <th>Time</th> -->
+                        <th>Food</th>
+                        <th>Grams Consumed</th>
+                    </tr>
+                </thead>
+                <tbody id="nutrition-log-table">
+                    {% for log in nutrition_logs %}
+                    <tr>
+                        <td>{{ log.time_of_consumption }}</td>
+                        <td>{{ log.food.food_item }}</td>
+                        <td>{{ log.num_grams_consumed }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+    </div>
+</div>
+
+<script>
+    const nutritionLogs = {{ nutrition_logs_by_date|safe }};
+
+    const selectedDateInput = document.getElementById('selected-nutrition-date');
+    const gramsDayElem = document.getElementById('grams-day');
+    const gramsWeekElem = document.getElementById('grams-week');
+    const dayTable = document.getElementById('nutrition-day-table');
+    const weekTable = document.getElementById('nutrition-week-table');
+
+    function formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    function getWeekRange(date) {
+        const day = date.getDay();
+        const start = new Date(date);
+        const end = new Date(date);
+        start.setDate(date.getDate() - day);
+        end.setDate(date.getDate() + (6 - day));
+        return [formatDate(start), formatDate(end)];
+    }
+
+    function updateNutritionView(date) {
+        const dateStr = formatDate(date);
+        selectedDateInput.value = dateStr;  // Update input to match
+
+        const logsToday = nutritionLogs[dateStr] || [];
+        let totalGramsToday = 0;
+
+        // Day Table
+        dayTable.innerHTML = '';
+        logsToday.forEach(log => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${log.food}</td>
+                <td>${log.num_grams_consumed}</td>
+                <td>${log.time_of_consumption}</td>
+            `;
+            dayTable.appendChild(row);
+            totalGramsToday += log.num_grams_consumed || 0;
+        });
+        gramsDayElem.textContent = totalGramsToday;
+
+        // Week Table
+        const [startStr, endStr] = getWeekRange(date);
+        let weeklyLogs = [];
+        for (let d = new Date(startStr); formatDate(d) <= endStr; d.setDate(d.getDate() + 1)) {
+            const ds = formatDate(d);
+            if (nutritionLogs[ds]) {
+                weeklyLogs = weeklyLogs.concat(nutritionLogs[ds]);
+            }
+        }
+
+        const weeklyTotals = {};
+        let totalGramsWeek = 0;
+        weeklyLogs.forEach(log => {
+            if (!log.food) return;
+            weeklyTotals[log.food] = (weeklyTotals[log.food] || 0) + (log.num_grams_consumed || 0);
+            totalGramsWeek += log.num_grams_consumed || 0;
+        });
+
+        gramsWeekElem.textContent = totalGramsWeek;
+
+        // weekTable.innerHTML = '';
+        // for (let food in weeklyTotals) {
+        //     const row = document.createElement('tr');
+        //     row.innerHTML = `
+        //         <td>${food}</td>
+        //         <td>${weeklyTotals[food]}</td>
+        //     `;
+        //     weekTable.appendChild(row);
+        // }
+        weekTable.innerHTML = ''; // Clear existing
+
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const startDate = new Date(startStr);
+
+        for (let i = 0; i < 7; i++) {
+            const currentDate = new Date(startDate);
+            currentDate.setDate(startDate.getDate() + i);
+            const currentStr = formatDate(currentDate);
+            const logs = nutritionLogs[currentStr] || [];
+
+            let totalGrams = 0;
+
+            logs.forEach(log => {
+                totalGrams += log.num_grams_consumed || 0;
+            });
+
+            const row = document.createElement('tr');
+            // row.innerHTML = `
+            //     <td>${dayNames[currentDate.getDay()], currentStr}</td>
+            //     <td>${currentStr}</td>
+            //     <td>${totalGrams}</td>
+            // `;
+            row.innerHTML = `
+                <td>${dayNames[currentDate.getDay()]}</td>
+                <td>${totalGrams}</td>
+            `;
+            weekTable.appendChild(row);
+        }
+
+    }
+
+    // Initial Load
+    const today = new Date();
+    selectedDateInput.value = formatDate(today);
+    updateNutritionView(today);
+
+    // On date change
+    selectedDateInput.addEventListener('change', () => {
+        const selected = new Date(selectedDateInput.value);
+        if (!isNaN(selected)) {
+            updateNutritionView(selected);
+        }
+    });
+</script>
+
+<div id="fitness" class="tab-content"></div>
+<div id="sleep" class="tab-content"></div>
+
+<a href="{% url 'home' %}">Back to Home</a>
+
+<!-- Simple JavaScript to switch tabs -->
+<script>
+    function openTab(tabId) {
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => tab.style.display = 'none');
+
+        document.getElementById(tabId).style.display = 'block';
+    }
+</script>
+
+</body>

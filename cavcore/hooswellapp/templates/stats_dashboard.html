@@ -1,22 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stats Dashboard</title>
-</head>
-<body>
+<header>
     <h1>Stats Dashboard</h1>
+    <!-- Tab Navigation -->
+    <div>
+        <button onclick="openTab('nutrition')">Nutrition</button>
+        <button onclick="openTab('fitness')">Fitness</button>
+        <button onclick="openTab('sleep')">Sleep</button>
+    </div>
 
-    <!-- Nutrition Stats -->
-    <section>
+<body>
+    <!-- Nutrition Tab -->
+    <section id="nutrition" class="tab-content">
         <h2>Nutrition Stats</h2>
         <table border="1">
             <thead>
                 <tr>
                     <th>Food</th>
                     <th>Total Grams Consumed</th>
-                    <!-- <th>Total Entries</th> -->
                 </tr>
             </thead>
             <tbody>
@@ -24,7 +23,6 @@
                 <tr>
                     <td>{{ stat.food }}</td>
                     <td>{{ stat.total_grams }}</td>
-                    <!-- <td>{{ stat.total_entries }}</td> -->
                 </tr>
                 {% endfor %}
             </tbody>
@@ -33,13 +31,30 @@
         <h3>Recent Nutrition Logs</h3>
         <ul>
             {% for log in nutrition_logs %}
-                <li>{{ log.food.name }}: {{ log.num_grams_consumed }} grams ({{ log.time_of_consumption }})</li>
+                <li>{{ log.food.food_item }}: {{ log.num_grams_consumed }} grams ({{ log.time_of_consumption }})</li>
             {% endfor %}
         </ul>
+
+        <h3>Today's Nutrition Logs</h3>
+        {% if nutrition_logs_today %}
+            <ul>
+                {% for log in nutrition_logs_today %}
+                    <li>{{ log.food.food_item }}: {{ log.num_grams_consumed }} grams at {{ log.time_of_consumption }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No entries logged today.</p>
+        {% endif %}
+
+        <h4>Total Grams Consumed Today: {{ total_grams_today }}</h4>
+
+        {% if total_calories_today %}
+            <h4>Total Calories Consumed Today: {{ total_calories_today }}</h4>
+        {% endif %}
     </section>
 
-    <!-- Fitness Stats -->
-    <section>
+    <!-- Fitness Tab -->
+    <section id="fitness" class="tab-content" style="display:none;">
         <h2>Fitness Stats</h2>
         <table border="1">
             <thead>
@@ -68,8 +83,8 @@
         </ul>
     </section>
 
-    <!-- Sleep Stats -->
-    <section>
+    <!-- Sleep Tab -->
+    <section id="sleep" class="tab-content" style="display:none;">
         <h2>Sleep Stats</h2>
         <table border="1">
             <thead>
@@ -98,5 +113,15 @@
         </ul>
     </section>
 
+    <a href="{% url 'home' %}">Back to Home</a>
+
+    <!-- Simple JavaScript to switch tabs -->
+    <script>
+        function openTab(tabId) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.style.display = 'none');
+
+            document.getElementById(tabId).style.display = 'block';
+        }
+    </script>
 </body>
-</html>
