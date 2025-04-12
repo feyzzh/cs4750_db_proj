@@ -151,7 +151,6 @@ class FitnessLog(models.Model):
     user = models.ForeignKey('Users', models.DO_NOTHING)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    duration_minutes = models.PositiveIntegerField(editable=False)
     activity = models.TextField()
     description = models.TextField(blank=True, null=True)
 
@@ -159,10 +158,6 @@ class FitnessLog(models.Model):
         managed = False
         db_table = 'fitness_log'
         unique_together = (('user', 'start_time', 'end_time'),)
-    def save(self, *args, **kwargs):
-        duration = self.end_time - self.start_time
-        self.duration_minutes = int(duration.total_seconds() / 60)
-        super().save(*args, **kwargs)
 
 
 class Foods(models.Model):

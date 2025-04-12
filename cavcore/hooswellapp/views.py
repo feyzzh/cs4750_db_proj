@@ -122,7 +122,7 @@ def add_fitness_log(request):
 
             fitness_log.user = custom_user
             fitness_log.save()
-            return redirect('view_fitness_logs')
+            return redirect('home')
     else:
         form = FitnessLogForm()
 
