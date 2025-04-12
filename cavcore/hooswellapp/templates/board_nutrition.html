@@ -1,11 +1,5 @@
 <header>
-    <h1>Dashboard</h1>
-    <!-- Tab Navigation -->
-    <div>
-        <button onclick="openTab('nutrition')">Nutrition</button>
-        <button onclick="openTab('fitness')">Fitness</button>
-        <button onclick="openTab('sleep')">Sleep</button>
-    </div>
+    {% include 'board.html' %}
 </header>
 
 <body>
@@ -49,11 +43,11 @@
         </div>
         <div style="flex: 1;">
             <!-- Table: Week Totals -->
-            <h3>Gram Totals for the Week</h3>
+            <h3>Food Totals for the Week</h3>
             <table border="1" style="width: 100%;">
                 <thead>
                     <tr>
-                        <th>Day</th>
+                        <th>Food</th>
                         <th>Total Grams</th>
                     </tr>
                 </thead>
@@ -183,7 +177,7 @@
             //     <td>${totalGrams}</td>
             // `;
             row.innerHTML = `
-                <td>${dayNames[currentDate.getDay()]}</td>
+                <td>${dayNames[currentDate.getDay()], currentStr}</td>
                 <td>${totalGrams}</td>
             `;
             weekTable.appendChild(row);
