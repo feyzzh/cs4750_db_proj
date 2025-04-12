@@ -94,7 +94,13 @@ def add_sleep(request):
         form = SleepLogForm(request.POST)
         if form.is_valid():
             sleep_log = form.save(commit=False)
-            sleep_log.user = request.user
+            auth_user = request.user
+            try:
+                custom_user = Users.objects.get(email=auth_user.email)
+            except Users.DoesNotExist:
+                return HttpResponse("No matching user found.", status=400)
+
+            sleep_log.user = custom_user
             sleep_log.save()
             return redirect('home')
     else:
@@ -108,7 +114,13 @@ def add_fitness_log(request):
         form = FitnessLogForm(request.POST)
         if form.is_valid():
             fitness_log = form.save(commit=False)
-            fitness_log.user = request.user
+            auth_user = request.user
+            try:
+                custom_user = Users.objects.get(email=auth_user.email)
+            except Users.DoesNotExist:
+                return HttpResponse("No matching user found.", status=400)
+
+            fitness_log.user = custom_user
             fitness_log.save()
             return redirect('view_fitness_logs')
     else:
