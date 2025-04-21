@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm
 from .models import NutritionLog, SleepLog, FitnessLog
@@ -67,6 +67,16 @@ def logout_view(request):
     logout(request)
     messages.success(request, "You’ve been logged out successfully.")
     return redirect('login')
+
+@login_required
+def profile(request):
+    auth_user = request.user
+    try:
+        custom_user = Users.objects.get(email=auth_user.email)
+    except Users.DoesNotExist:
+        return HttpResponse("No matching user found.", status=400)
+
+    return render(request, 'profile.html', {'profile': custom_user})
 
 @login_required
 def add_food(request):
