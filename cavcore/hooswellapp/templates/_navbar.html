@@ -1,0 +1,61 @@
+{% load static %}
+
+<style>
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f8f9fa;
+        padding: 10px 20px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .navbar-left {
+        display: flex;
+        align-items: center;
+    }
+    
+    .navbar-left a {
+        display: flex;
+        align-items: center;
+        text-decoration: none; /* Remove underline */
+        color: inherit;         /* Keep text color unchanged */
+    }
+
+
+    .logo-img {
+        width: 60px;
+        height: auto;
+        margin-right: 15px;
+    }
+
+    .navbar-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+
+    .navbar-links a {
+        margin-left: 20px;
+        text-decoration: none;
+        color: #007bff;
+        font-weight: 500;
+    }
+
+    .navbar-links a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<nav class="navbar">
+    <div class="navbar-left">
+        <a href="{% url 'home' %}">
+            <img src="{% static 'rotunda-transparent.png' %}" alt="Rotunda Logo" class="logo-img">
+            <h1 class="navbar-title">HoosWell</h1>
+        </a>
+    </div>
+    <div class="navbar-links">
+        <a href="{% url 'stats_dashboard' %}">Dashboard</a>
+    </div>
+</nav>
