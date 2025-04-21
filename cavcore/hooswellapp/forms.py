@@ -39,6 +39,18 @@ class SignupForm(forms.ModelForm):
             raise forms.ValidationError("An account with this email already exists.")
         return email
 
+class FoodItemForm(forms.ModelForm):
+
+    class Meta:
+        model = Foods
+        fields = ['food_item', 'food_category', 'per_100_units', 'calories_per_100', 'kj_per_100']
+        widgets = {
+            'food_item': forms.TextInput(attrs={'placeholder': 'Tomato'}),
+            'food_category': forms.TextInput(attrs={'placeholder': 'Fruit'}),
+            'per_100_units': forms.TextInput(attrs={'placeholder': 'grams / mL'}),
+            'calories_per_100': forms.NumberInput(attrs={'placeholder': '18'}),
+            'kj_per_100': forms.NumberInput(attrs={'placeholder': '64'}),
+        }
 
 class NutritionLogForm(forms.ModelForm):
     # We don't want to show the time_of_consumption field on the form

@@ -10,6 +10,16 @@
 </head>
 <body>
     <h1>Add Nutrition Log</h1>
+    <a href="{% url 'add_food' %}" style="
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+        ">
+            Add Food Item
+        </a>
 
     <form method="POST" action="{% url 'add_nutrition' %}">
         {% csrf_token %}
