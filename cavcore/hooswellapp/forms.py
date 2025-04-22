@@ -1,5 +1,5 @@
 from django import forms
-from .models import NutritionLog, Foods, SleepLog, FitnessLog
+from .models import NutritionLog, Foods, SleepLog, FitnessLog, Goals
 from .models import Users
 from django.utils import timezone
 
@@ -86,4 +86,14 @@ class FitnessLogForm(forms.ModelForm):
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'description': forms.Textarea(attrs={'placeholder': 'Optional description'}),
+        }
+
+class GoalForm(forms.ModelForm):
+    class Meta:
+        model = Goals
+        #need to add numeric value specific to goal type and change goal model
+        fields = ['goal_type', 'start_time', 'end_time', 'completed', 'description']
+        widgets = {
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }

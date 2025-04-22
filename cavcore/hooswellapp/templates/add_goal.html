@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create New Goal{% endblock %}
+
+{% block extra_head %}
+{% endblock %}
+    
+{% block content %}
+    <h1>Create New Goal</h1>
+    <form method="POST" action="{% url 'add_goal' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Save Goal">
+    </form>
+    <a href="{% url 'home' %}">Back to Home</a>
+{% endblock %}

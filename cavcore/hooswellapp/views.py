@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm
+from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm, GoalForm
 from .models import NutritionLog, SleepLog, FitnessLog
 
 
@@ -162,6 +162,24 @@ def add_fitness_log(request):
 from datetime import datetime, timedelta
 from django.utils import timezone
 
+@login_required
+def add_goal(request):
+    if request.method == 'POST':
+        form = GoalForm(request.POST)
+        if form.is_valid():
+            goals = form.save(commit=False)
+            auth_user = request.user
+            try:
+                custom_user = Users.objects.get(email=auth_user.email)
+            except Users.DoesNotExist:
+                return HttpResponse("No matching user found.", status=400)
+
+            goals.user = custom_user
+            goals.save()
+            return redirect('home')
+    else:
+        form = GoalForm()
+    return render(request, 'add_goal.html', {'form': form})
 
 @login_required
 def stats_dashboard(request):
