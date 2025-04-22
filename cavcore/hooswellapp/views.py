@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm, GoalForm
-from .models import NutritionLog, SleepLog, FitnessLog
+from .models import NutritionLog, SleepLog, FitnessLog, Goals
 
 
 from django.contrib.auth import authenticate, login, logout
@@ -337,3 +337,19 @@ def nutrition_dashboard(request):
     }
 
     return render(request, 'board_nutrition.html', context)
+
+@login_required
+def view_goals(request):
+    user_email = request.user.email
+
+    try:
+        user = Users.objects.get(email=user_email)
+    except Users.DoesNotExist:
+        return render(request, 'error.html', {'message': 'User not found.'})
+
+    goals = Goals.objects.filter(user=user).order_by('-start_time')
+
+    context={
+        'goals': goals
+    }
+    return render(request, 'goals.html', context)

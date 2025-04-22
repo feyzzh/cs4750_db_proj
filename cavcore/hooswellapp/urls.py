@@ -14,6 +14,7 @@ urlpatterns = [
     path('add_goal', views.add_goal, name='add_goal'),
     path('stats/', views.stats_dashboard, name='stats_dashboard'),
     path('nutri-dash/', views.nutrition_dashboard, name='nutri_dash'),
-    path('dashboard/', views.dashboard, name='dashboard')
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('goals', views.view_goals, name='goals')
 
 ]

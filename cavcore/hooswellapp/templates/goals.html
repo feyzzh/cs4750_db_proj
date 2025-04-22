@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Goals{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Dashboard</h1>
+</header>
+
+    <h2>Goals</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Activity</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for goal in goals %}
+            <tr>
+                <td>{{ goal.goal_type }}</td>
+                <td>{{ goal.start_time }}</td>
+                <td>{{ goal.end_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Recent Goals</h3>
+    <ul>
+        {% for goal in goals %}
+            <li>{{ goal.goal_type }} ({{ goal.start_time }} - {{ goal.end_time }}),
+                {{ goal.description }} <br> Completed = {{ goal.completed }}</li>
+        {% endfor %}
+    </ul>
+<a href="{% url 'home' %}">Back to Home</a>
+{% endblock %}
