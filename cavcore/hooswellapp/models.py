@@ -224,7 +224,7 @@ class SleepLog(models.Model):
 class Users(models.Model):
     user_id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30, blank=True, null=True)
+    last_name = models.CharField(max_length=30, null=True)
     email = models.TextField()
     phone_number = models.TextField(blank=True, null=True)
     city = models.TextField(blank=True, null=True)
