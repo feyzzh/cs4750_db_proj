@@ -1,0 +1,89 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: left;
+    margin: 0;
+    padding: 0;
+}
+
+header h1 {
+    margin-top: 30px;
+    font-size: 32px;
+    color: #333;
+}
+
+.intro p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 40px;
+}
+
+.centered-wrapper {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.auth-links {
+    margin-top: 40px;
+}
+
+.auth-links a {
+    margin: 10px;
+    display: inline-block;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.circle-links {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+.circle-links a {
+    position: relative; /* Needed for overlay positioning */
+    display: block;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    text-decoration: none;
+}
+
+.circle-links a img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.circle-links a:hover img {
+    transform: scale(1.05);
+}
+
+/* Overlay layer */
+.circle-links a .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none; /* Let clicks pass through to the link */
+}
+
+.circle-links a:hover .overlay {
+    opacity: 1;
+}

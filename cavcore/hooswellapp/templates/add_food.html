@@ -1,7 +1,13 @@
-<head>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Welcome to the App{% endblock %}
+
+{% block extra_head %}
     {% include '_navbar.html' %}
-</head>
-<body>
+{% endblock %}
+    
+{% block content %}
     <h1>Add Food Item</h1>
 
     <form method="POST" action="{% url 'add_food' %}">
@@ -12,4 +18,4 @@
         <input type="submit" value="Save Food Item">
     </form>
     <a href="{% url 'nutri_dash' %}">Back to Nutrition Log</a>
-</body>
+{% endblock %}

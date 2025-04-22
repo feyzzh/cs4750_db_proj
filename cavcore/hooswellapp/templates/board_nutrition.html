@@ -1,10 +1,6 @@
-<header>
-    {% include 'board.html' %}
-</header>
-
-<body>
-
-<div id="nutrition" class="tab-content">
+{% block content %}
+{% include 'board.html' %}
+<div id="nutrition" class="tab-content" style="padding: 20px;">
     <div class="header-row" style="display: flex; justify-content: space-between; align-items: center;">
         <h2>Nutrition Overview</h2>
         <a href="{% url 'add_nutrition' %}" style="
@@ -91,130 +87,135 @@
                 </tbody>
             </table>
     </div>
+    <div id="fitness" class="tab-content"></div>
+    <div id="sleep" class="tab-content"></div>
+
+    <a href="{% url 'home' %}">Back to Home</a>
 </div>
 
+
+
+{% endblock %}
+{% block extra_scripts %}
 <script>
-    const nutritionLogs = {{ nutrition_logs_by_date|safe }};
+    document.addEventListener('DOMContentLoaded', () => {
+        const nutritionLogs = {{ nutrition_logs_by_date|safe }};
 
-    const selectedDateInput = document.getElementById('selected-nutrition-date');
-    const gramsDayElem = document.getElementById('grams-day');
-    const gramsWeekElem = document.getElementById('grams-week');
-    const dayTable = document.getElementById('nutrition-day-table');
-    const weekTable = document.getElementById('nutrition-week-table');
+        const selectedDateInput = document.getElementById('selected-nutrition-date');
+        const gramsDayElem = document.getElementById('grams-day');
+        const gramsWeekElem = document.getElementById('grams-week');
+        const dayTable = document.getElementById('nutrition-day-table');
+        const weekTable = document.getElementById('nutrition-week-table');
 
-    function formatDate(date) {
-        return date.toISOString().split('T')[0];
-    }
-
-    function getWeekRange(date) {
-        const day = date.getDay();
-        const start = new Date(date);
-        const end = new Date(date);
-        start.setDate(date.getDate() - day);
-        end.setDate(date.getDate() + (6 - day));
-        return [formatDate(start), formatDate(end)];
-    }
-
-    function updateNutritionView(date) {
-        const dateStr = formatDate(date);
-        selectedDateInput.value = dateStr;  // Update input to match
-
-        const logsToday = nutritionLogs[dateStr] || [];
-        let totalGramsToday = 0;
-
-        // Day Table
-        dayTable.innerHTML = '';
-        logsToday.forEach(log => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${log.food}</td>
-                <td>${log.num_grams_consumed}</td>
-                <td>${log.time_of_consumption}</td>
-            `;
-            dayTable.appendChild(row);
-            totalGramsToday += log.num_grams_consumed || 0;
-        });
-        gramsDayElem.textContent = totalGramsToday;
-
-        // Week Table
-        const [startStr, endStr] = getWeekRange(date);
-        let weeklyLogs = [];
-        for (let d = new Date(startStr); formatDate(d) <= endStr; d.setDate(d.getDate() + 1)) {
-            const ds = formatDate(d);
-            if (nutritionLogs[ds]) {
-                weeklyLogs = weeklyLogs.concat(nutritionLogs[ds]);
-            }
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
         }
 
-        const weeklyTotals = {};
-        let totalGramsWeek = 0;
-        weeklyLogs.forEach(log => {
-            if (!log.food) return;
-            weeklyTotals[log.food] = (weeklyTotals[log.food] || 0) + (log.num_grams_consumed || 0);
-            totalGramsWeek += log.num_grams_consumed || 0;
-        });
+        function getWeekRange(date) {
+            const day = date.getDay();
+            const start = new Date(date);
+            const end = new Date(date);
+            start.setDate(date.getDate() - day);
+            end.setDate(date.getDate() + (6 - day));
+            return [formatDate(start), formatDate(end)];
+        }
 
-        gramsWeekElem.textContent = totalGramsWeek;
+        function updateNutritionView(date) {
+            const dateStr = formatDate(date);
+            selectedDateInput.value = dateStr;  // Update input to match
 
-        // weekTable.innerHTML = '';
-        // for (let food in weeklyTotals) {
-        //     const row = document.createElement('tr');
-        //     row.innerHTML = `
-        //         <td>${food}</td>
-        //         <td>${weeklyTotals[food]}</td>
-        //     `;
-        //     weekTable.appendChild(row);
-        // }
-        weekTable.innerHTML = ''; // Clear existing
+            const logsToday = nutritionLogs[dateStr] || [];
+            let totalGramsToday = 0;
 
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const startDate = new Date(startStr);
+            // Day Table
+            dayTable.innerHTML = '';
+            logsToday.forEach(log => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${log.food}</td>
+                    <td>${log.num_grams_consumed}</td>
+                    <td>${log.time_of_consumption}</td>
+                `;
+                dayTable.appendChild(row);
+                totalGramsToday += log.num_grams_consumed || 0;
+            });
+            gramsDayElem.textContent = totalGramsToday;
 
-        for (let i = 0; i < 7; i++) {
-            const currentDate = new Date(startDate);
-            currentDate.setDate(startDate.getDate() + i);
-            const currentStr = formatDate(currentDate);
-            const logs = nutritionLogs[currentStr] || [];
+            // Week Table
+            const [startStr, endStr] = getWeekRange(date);
+            let weeklyLogs = [];
+            for (let d = new Date(startStr); formatDate(d) <= endStr; d.setDate(d.getDate() + 1)) {
+                const ds = formatDate(d);
+                if (nutritionLogs[ds]) {
+                    weeklyLogs = weeklyLogs.concat(nutritionLogs[ds]);
+                }
+            }
 
-            let totalGrams = 0;
-
-            logs.forEach(log => {
-                totalGrams += log.num_grams_consumed || 0;
+            const weeklyTotals = {};
+            let totalGramsWeek = 0;
+            weeklyLogs.forEach(log => {
+                if (!log.food) return;
+                weeklyTotals[log.food] = (weeklyTotals[log.food] || 0) + (log.num_grams_consumed || 0);
+                totalGramsWeek += log.num_grams_consumed || 0;
             });
 
-            const row = document.createElement('tr');
-            // row.innerHTML = `
-            //     <td>${dayNames[currentDate.getDay()], currentStr}</td>
-            //     <td>${currentStr}</td>
-            //     <td>${totalGrams}</td>
-            // `;
-            row.innerHTML = `
-                <td>${dayNames[currentDate.getDay()], currentStr}</td>
-                <td>${totalGrams}</td>
-            `;
-            weekTable.appendChild(row);
+            gramsWeekElem.textContent = totalGramsWeek;
+
+            // weekTable.innerHTML = '';
+            // for (let food in weeklyTotals) {
+            //     const row = document.createElement('tr');
+            //     row.innerHTML = `
+            //         <td>${food}</td>
+            //         <td>${weeklyTotals[food]}</td>
+            //     `;
+            //     weekTable.appendChild(row);
+            // }
+            weekTable.innerHTML = ''; // Clear existing
+
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const startDate = new Date(startStr);
+
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                const currentStr = formatDate(currentDate);
+                const logs = nutritionLogs[currentStr] || [];
+
+                let totalGrams = 0;
+
+                logs.forEach(log => {
+                    totalGrams += log.num_grams_consumed || 0;
+                });
+
+                const row = document.createElement('tr');
+                // row.innerHTML = `
+                //     <td>${dayNames[currentDate.getDay()], currentStr}</td>
+                //     <td>${currentStr}</td>
+                //     <td>${totalGrams}</td>
+                // `;
+                row.innerHTML = `
+                    <td>${dayNames[currentDate.getDay()], currentStr}</td>
+                    <td>${totalGrams}</td>
+                `;
+                weekTable.appendChild(row);
+            }
+
         }
 
-    }
+        // Initial Load
+        const today = new Date();
+        selectedDateInput.value = formatDate(today);
+        updateNutritionView(today);
 
-    // Initial Load
-    const today = new Date();
-    selectedDateInput.value = formatDate(today);
-    updateNutritionView(today);
-
-    // On date change
-    selectedDateInput.addEventListener('change', () => {
-        const selected = new Date(selectedDateInput.value);
-        if (!isNaN(selected)) {
-            updateNutritionView(selected);
-        }
+        // On date change
+        selectedDateInput.addEventListener('change', () => {
+            const selected = new Date(selectedDateInput.value);
+            if (!isNaN(selected)) {
+                updateNutritionView(selected);
+            }
+        });
     });
 </script>
-
-<div id="fitness" class="tab-content"></div>
-<div id="sleep" class="tab-content"></div>
-
-<a href="{% url 'home' %}">Back to Home</a>
 
 <!-- Simple JavaScript to switch tabs -->
 <script>
@@ -225,5 +226,4 @@
         document.getElementById(tabId).style.display = 'block';
     }
 </script>
-
-</body>
+{% endblock %}

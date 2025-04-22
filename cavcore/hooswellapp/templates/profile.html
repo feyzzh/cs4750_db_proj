@@ -1,6 +1,6 @@
-<!-- templates/profile.html -->
+{% extends "base.html" %}
 
-{% include '_navbar.html' %}
+{% block content %}
 
 <h2>User Profile</h2>
 <ul>
@@ -12,3 +12,5 @@
     <li><strong>State:</strong> {{ profile.state }}</li>
     <li><strong>Country:</strong> {{ profile.country }}</li>
 </ul>
+
+{% endblock %}

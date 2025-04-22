@@ -1,12 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Fitness Log</title>
-    {% include '_navbar.html' %}
-</head>
-<body>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add Fitness Log{% endblock %}
+
+{% block extra_head %}
+{% endblock %}
+    
+{% block content %}
     <h1>Add Fitness Log</h1>
     <form method="POST" action="{% url 'add_fitness_log' %}">
         {% csrf_token %}
@@ -14,5 +14,4 @@
         <input type="submit" value="Save Fitness Log">
     </form>
     <a href="{% url 'home' %}">Back to Home</a>
-</body>
-</html>
+{% endblock %}

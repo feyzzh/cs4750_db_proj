@@ -1,44 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Nutrition Log</title>
-    {% include '_navbar.html' %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add Nutrition Log{% endblock %}
+
+{% block extra_head %}
+    <!-- Select2 CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <h1>Add Nutrition Log</h1>
+
     <a href="{% url 'add_food' %}" style="
             padding: 8px 16px;
             background-color: #4CAF50;
             color: white;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 14px;
-        ">
-            Add Food Item
-        </a>
+            font-size: 14px;">
+        Add Food Item
+    </a>
 
     <form method="POST" action="{% url 'add_nutrition' %}">
         {% csrf_token %}
-        
         {{ form.as_p }}
-
         <input type="submit" value="Save Nutrition Log">
     </form>
-    <a href="{% url 'home' %}">Back to Home</a>
 
+    <a href="{% url 'home' %}">Back to Home</a>
+{% endblock %}
+
+{% block extra_scripts %}
+    <!-- jQuery + Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Initialize select2 for the food dropdown
             $(".food-dropdown").select2({
                 placeholder: "Search for foods",
                 allowClear: true
             });
         });
     </script>
-</body>
-</html>
+{% endblock %}
