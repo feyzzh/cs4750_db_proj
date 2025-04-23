@@ -7,8 +7,8 @@
 {% endblock %}
     
 {% block content %}
-    <h1>Create New Goal</h1>
-    <form method="POST" action="{% url 'add_goal' %}">
+    <h1>Create New {{ goal_type }} Goal</h1>
+    <form method="POST" action="{% url 'add_goal' goal_type=goal_type%}">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Save Goal">

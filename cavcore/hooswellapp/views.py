@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm, GoalForm
-from .models import NutritionLog, SleepLog, FitnessLog, Goals
+from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm, GoalForm, NutritionGoalForm, FitnessGoalForm, SleepGoalForm
+from .models import NutritionLog, SleepLog, FitnessLog, Goals, NutritionGoals, FitnessGoals, SleepGoals
 
 
 from django.contrib.auth import authenticate, login, logout
@@ -10,7 +10,8 @@ from .models import Users
 from .forms import SignupForm
 from django.contrib import messages
 from django.http import HttpResponse
-from django.db.models import Sum, Avg, Count
+from django.db.models import Sum, Avg, Count, Q
+
 
 # Create your views here.
 def home(request):
@@ -163,9 +164,15 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 
 @login_required
-def add_goal(request):
+def add_goal(request, goal_type):
     if request.method == 'POST':
         form = GoalForm(request.POST)
+        if goal_type == 'nutrition':
+            form = NutritionGoalForm(request.POST)
+        elif goal_type == 'fitness':
+            form = FitnessGoalForm(request.POST)
+        elif goal_type == 'sleep':
+            form = SleepGoalForm(request.POST)
         if form.is_valid():
             goals = form.save(commit=False)
             auth_user = request.user
@@ -179,7 +186,16 @@ def add_goal(request):
             return redirect('home')
     else:
         form = GoalForm()
-    return render(request, 'add_goal.html', {'form': form})
+        if goal_type == 'nutrition':
+            form = NutritionGoalForm()
+        elif goal_type == 'fitness':
+            form = FitnessGoalForm()
+        elif goal_type == 'sleep':
+            form = SleepGoalForm()
+    return render(request, 'add_goal.html', {'form': form,'goal_type':goal_type})
+@login_required
+def add_goal_helper(request):
+    return render(request, 'goal_helper.html')
 
 @login_required
 def stats_dashboard(request):
@@ -466,8 +482,32 @@ def view_goals(request):
         return render(request, 'error.html', {'message': 'User not found.'})
 
     goals = Goals.objects.filter(user=user).order_by('-start_time')
-
+    nutrition_goals = NutritionGoals.objects.filter(user=user).order_by('-start_time')
+    fitness_goals = FitnessGoals.objects.filter(user=user).order_by('-start_time')
+    sleep_goals = SleepGoals.objects.filter(user=user).order_by('-start_time')
+    fitness_goal_info=[]
+    for goal in fitness_goals:
+        activities = FitnessLog.objects.filter(
+            user=goal.user,
+            start_time__gte=goal.start_time,  # find activities somewhere in goal's time
+            end_time__lte=goal.end_time,
+        )
+        if goal.activity:
+            activities = activities.filter(activity=goal.activity)
+        total_minutes = sum(
+            (activity.end_time - activity.start_time).total_seconds() / 60
+            for activity in activities
+        )
+        if total_minutes is None:
+            total_minutes = 0
+        progress = (total_minutes / goal.target_minutes) * 100
+        fitness_goal_info.append({'goal':goal,'progress':"{:.2f}".format(progress)})
     context={
-        'goals': goals
+        'goals': goals,
+        'nutrition_goals': nutrition_goals,
+        'fitness_goals': fitness_goal_info,
+        'sleep_goals': sleep_goals
     }
     return render(request, 'goals.html', context)
+
+

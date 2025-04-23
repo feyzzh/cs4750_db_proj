@@ -2,13 +2,51 @@
 {% load static %}
 
 {% block title %}Goals{% endblock %}
-
+<style>
+.progress-container {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.progress-bar {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 20px;
+    margin-top: 10px;
+    position: relative;
+}
+.progress {
+    height: 100%;
+    background-color: #76c7c0;
+    width: 0%; /* Dynamically set via inline style */
+    transition: width 0.5s ease-in-out;
+}
+.progress-container p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+</style>
 {% block content %}
 <header>
     <h1>Dashboard</h1>
+    <!-- Tab Navigation -->
+    <div>
+        <button onclick="openTab('wellness')">All Goals</button>
+        <button onclick="openTab('nutrition')">Nutrition</button>
+        <button onclick="openTab('fitness')">Fitness</button>
+        <button onclick="openTab('sleep')">Sleep</button>
+    </div>
 </header>
-
-    <h2>Goals</h2>
+<section id="wellness" class="tab-content">
+       <h2>Goals</h2>
     <table border="1">
         <thead>
             <tr>
@@ -36,4 +74,116 @@
         {% endfor %}
     </ul>
 <a href="{% url 'home' %}">Back to Home</a>
+</section>
+
+<section id="nutrition" class="tab-content" style="display:none;">
+       <h2>Nutrition Goals</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Activity</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for goal in nutrition_goals %}
+            <tr>
+                <td>{{ goal.goal_type }}</td>
+                <td>{{ goal.start_time }}</td>
+                <td>{{ goal.end_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Recent Goals</h3>
+    <ul>
+        {% for goal in nutrition_goals %}
+            <li>{{ goal.goal_type }} ({{ goal.start_time }} - {{ goal.end_time }}),
+                {{ goal.description }} <br> Completed = {{ goal.completed }}</li>
+        {% endfor %}
+    </ul>
+<a href="{% url 'home' %}">Back to Home</a>
+</section>
+
+<section id="fitness" class="tab-content" style="display:none;">
+    <h2>Fitness Goals</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Activity</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pair in fitness_goals %}
+            <tr>
+                <td>{{ pair.goal.activity }}</td>
+                <td>{{ pair.goal.start_time }}</td>
+                <td>{{ pair.goal.end_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Recent Goals</h3>
+    <ul>
+
+        {% for pair in fitness_goals %}
+            <li>({{ pair.goal.start_time }} - {{ pair.goal.end_time }}),
+            Description: {{ pair.goal.description }}, Completed = {{ pair.goal.completed }},
+                <div style="width: 50%; background-color: #e0e0e0;">
+                <div style="width: {{ pair.progress }}%; background-color: #4CAF50; height: 20px;">Progress
+                    = {{ pair.progress }}%
+                </div>
+                </div>
+
+            </li>
+        {% endfor %}
+    <a href="{% url 'home' %}">Back to Home</a>
+</section>
+
+<section id="sleep" class="tab-content" style="display:none;">
+    <h2>Sleep Goals</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Activity</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for goal in sleep_goals %}
+            <tr>
+                <td>{{ goal.goal_type }}</td>
+                <td>{{ goal.start_time }}</td>
+                <td>{{ goal.end_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Recent Goals</h3>
+    <ul>
+        {% for goal in sleep_goals %}
+            <li>{{ goal.goal_type }} ({{ goal.start_time }} - {{ goal.end_time }}),
+                {{ goal.description }} <br> Completed = {{ goal.completed }}</li>
+        {% endfor %}
+    <a href="{% url 'home' %}">Back to Home</a>
+</section>
+
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function openTab(tabId) {
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => tab.style.display = 'none');
+        document.getElementById(tabId).style.display = 'block';
+    }
+</script>
 {% endblock %}
