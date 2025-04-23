@@ -339,6 +339,124 @@ def nutrition_dashboard(request):
     return render(request, 'board_nutrition.html', context)
 
 @login_required
+def entry_manager(request):
+    user_email = request.user.email
+    try:
+        user = Users.objects.get(email=user_email)
+    except Users.DoesNotExist:
+        return render(request, 'error.html', {'message': 'User not found.'})
+
+    nutrition_logs = NutritionLog.objects.filter(user_id=user)
+    fitness_logs = FitnessLog.objects.filter(user_id=user)
+    sleep_logs = SleepLog.objects.filter(user_id=user)
+
+    return render(request, 'entry_manager.html', {
+        'nutrition_logs': nutrition_logs,
+        'fitness_logs': fitness_logs,
+        'sleep_logs': sleep_logs,
+    })
+
+# from django.http import JsonResponse
+# from django.views.decorators.csrf import csrf_exempt
+# from django.db import connection
+# import json
+
+
+# @csrf_exempt
+# def update_entry(request):
+#     if request.method == 'POST':
+#         # Get the incoming data (JSON)
+#         data = json.loads(request.body)
+#         entry_id = data.get('id')
+#         description = data.get('description')
+
+#         # Determine the correct table and primary key logic based on the ID passed (for each table)
+#         table = data.get('table')
+        
+#         # Construct raw SQL queries for each type of log (nutrition, fitness, sleep)
+#         if table == 'nutrition_log':
+#             query = """
+#                 UPDATE nutrition_log
+#                 SET description = %s
+#                 WHERE user_id = %s AND food_id = %s AND time_of_consumption = %s
+#             """
+#             # You need to extract the composite key (user_id, food_id, and time_of_consumption)
+#             user_id, food_id, time_of_consumption = get_composite_key_values(entry_id)
+#         elif table == 'fitness_log':
+#             query = """
+#                 UPDATE fitness_log
+#                 SET description = %s
+#                 WHERE user_id = %s AND start_time = %s AND end_time = %s
+#             """
+#             # Extract the composite key (user_id, start_time, end_time)
+#             user_id, start_time, end_time = get_composite_key_values(entry_id)
+#         elif table == 'sleep_log':
+#             query = """
+#                 UPDATE sleep_log
+#                 SET description = %s
+#                 WHERE user_id = %s AND start_time = %s AND end_time = %s
+#             """
+#             # Extract the composite key (user_id, start_time, end_time)
+#             user_id, start_time, end_time = get_composite_key_values(entry_id)
+#         else:
+#             return JsonResponse({'success': False, 'error': 'Invalid table name'})
+
+#         # Execute the raw SQL query
+#         try:
+#             with connection.cursor() as cursor:
+#                 cursor.execute(query, [description, user_id, food_id, time_of_consumption])
+#             return JsonResponse({'success': True})
+#         except Exception as e:
+#             return JsonResponse({'success': False, 'error': str(e)})
+        
+#     def get_composite_key_values(entry_id):
+#         # Example function, customize this based on your schema and logic
+#         # For example, you may need to split `entry_id` or retrieve them from another table.
+#         return (user_id, food_id, time_of_consumption)  # Return the required composite key values
+
+# @csrf_exempt
+# def delete_entry(request):
+#     if request.method == 'POST':
+#         # Get the incoming data (JSON)
+#         data = json.loads(request.body)
+#         entry_id = data.get('id')
+#         table = data.get('table')
+
+#         # Construct SQL queries for each type of log (nutrition, fitness, sleep)
+#         if table == 'nutrition_log':
+#             query = """
+#                 DELETE FROM nutrition_log
+#                 WHERE user_id = %s AND food_id = %s AND time_of_consumption = %s
+#             """
+#             user_id, food_id, time_of_consumption = get_composite_key_values(entry_id)
+#         elif table == 'fitness_log':
+#             query = """
+#                 DELETE FROM fitness_log
+#                 WHERE user_id = %s AND start_time = %s AND end_time = %s
+#             """
+#             user_id, start_time, end_time = get_composite_key_values(entry_id)
+#         elif table == 'sleep_log':
+#             query = """
+#                 DELETE FROM sleep_log
+#                 WHERE user_id = %s AND start_time = %s AND end_time = %s
+#             """
+#             user_id, start_time, end_time = get_composite_key_values(entry_id)
+#         else:
+#             return JsonResponse({'success': False, 'error': 'Invalid table name'})
+
+#         try:
+#             with connection.cursor() as cursor:
+#                 cursor.execute(query, [user_id, food_id, time_of_consumption])
+#             return JsonResponse({'success': True})
+#         except Exception as e:
+#             return JsonResponse({'success': False, 'error': str(e)})
+        
+#     def get_composite_key_values(entry_id):
+#         # Example function, customize this based on your schema and logic
+#         # For example, you may need to split `entry_id` or retrieve them from another table.
+#         return (user_id, food_id, time_of_consumption)  # Return the required composite key values
+
+@login_required
 def view_goals(request):
     user_email = request.user.email
 
