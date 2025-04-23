@@ -1,0 +1,233 @@
+{% load static %}
+{% include 'base.html' %}
+
+
+<head>
+    <title>User Logs</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        table {
+            margin-bottom: 50px;
+        }
+    </style>
+</head>
+{% block content %}
+    <h1>Nutrition Log</h1>
+    <table id="nutrition" class="display">
+        <thead>
+            <tr>
+                <th style="display:none;">ID</th>
+                <th>Food ID</th>
+                <th>Time</th>
+                <th>Grams</th>
+                <th>Source</th>
+                <th>Description</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in nutrition_logs %}
+            <tr>
+                <td style="display:none;">{{ entry.id }}</td>
+                <td>{{ entry.food_id }}</td>
+                <td>{{ entry.time_of_consumption }}</td>
+                <td>{{ entry.num_grams_consumed }}</td>
+                <td>{{ entry.source }}</td>
+                <td>{{ entry.description }}</td>
+                <td><button class="edit">Edit</button></td>
+                <td><button class="delete">Delete</button></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Fitness Log</h1>
+    <table id="fitness" class="display">
+        <thead>
+            <tr>
+                <th style="display:none;">ID</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Activity</th>
+                <th>Description</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in fitness_logs %}
+            <tr>
+                <td style="display:none;">{{ entry.id }}</td>
+                <td>{{ entry.start_time }}</td>
+                <td>{{ entry.end_time }}</td>
+                <td>{{ entry.activity }}</td>
+                <td>{{ entry.description }}</td>
+                <td><button class="edit">Edit</button></td>
+                <td><button class="delete">Delete</button></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Sleep Log</h1>
+    <table id="sleep" class="display">
+        <thead>
+            <tr>
+                <th style="display:none;">ID</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Quality</th>
+                <th>Description</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in sleep_logs %}
+            <tr>
+                <td style="display:none;">{{ entry.id }}</td>
+                <td>{{ entry.start_time }}</td>
+                <td>{{ entry.end_time }}</td>
+                <td>{{ entry.sleep_quality }}</td>
+                <td>{{ entry.description }}</td>
+                <td><button class="edit">Edit</button></td>
+                <td><button class="delete">Delete</button></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="editModal" style="display:none;">
+        <input type="hidden" name="id">
+        <label for="description">Description:</label>
+        <input type="text" name="description">
+        <button id="saveChanges">Save</button>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function () {
+        let nutritionTable = $('#nutrition').DataTable({
+            columnDefs: [
+                { targets: 0, visible: false }  // Hide ID column, but keep it in data
+            ]
+        });
+        let fitnessTable = $('#fitness').DataTable({
+            columnDefs: [
+                { targets: 0, visible: false }  // Hide ID column, but keep it in data
+            ]
+        });
+        let sleepTable = $('#sleep').DataTable({
+            columnDefs: [
+                { targets: 0, visible: false }  // Hide ID column, but keep it in data
+            ]
+        });
+    
+        // --- EDIT HANDLERS ---
+        $('#nutrition').on('click', '.edit', function () {
+            const row = nutritionTable.row($(this).closest('tr')).data();
+            $('#editModal input[name="id"]').val(row[0]);
+            $('#editModal input[name="description"]').val(row[5]);
+            $('#editModal').show();
+        });
+    
+        $('#fitness').on('click', '.edit', function () {
+            const row = fitnessTable.row($(this).closest('tr')).data();
+            $('#editModal input[name="id"]').val(row[0]);
+            $('#editModal input[name="description"]').val(row[4]);
+            $('#editModal').show();
+        });
+    
+        $('#sleep').on('click', '.edit', function () {
+            const row = sleepTable.row($(this).closest('tr')).data();
+            $('#editModal input[name="id"]').val(row[0]);
+            $('#editModal input[name="description"]').val(row[4]);
+            $('#editModal').show();
+        });
+    
+        // --- SAVE CHANGES ---
+        $('#saveChanges').on('click', function () {
+            const id = $('#editModal input[name="id"]').val();
+            const description = $('#editModal input[name="description"]').val();
+    
+            $.ajax({
+                url: '/update_entry/',
+                method: 'POST',
+                data: {
+                    id: id,
+                    description: description,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function () {
+                    location.reload(); // Refresh to show updated data
+                }
+            });
+        });
+    
+        // --- DELETE HANDLERS ---
+        $('#nutrition').on('click', '.delete', function () {
+            let btn = $(this);
+            const row = nutritionTable.row(btn.closest('tr')).data();
+            const id = row[0];
+            if (confirm('Are you sure you want to delete this entry?')) {
+                $.ajax({
+                    url: '/delete_entry/',
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function () {
+                        nutritionTable.row(btn.closest('tr')).remove().draw();
+                    }
+                });
+            }
+        });
+    
+        $('#fitness').on('click', '.delete', function () {
+            let btn = $(this);
+            const row = fitnessTable.row(btn.closest('tr')).data();
+            const id = row[0];
+            if (confirm('Are you sure you want to delete this entry?')) {
+                $.ajax({
+                    url: '/delete_entry/',
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function () {
+                        fitnessTable.row(btn.closest('tr')).remove().draw();
+                    }
+                });
+            }
+        });
+    
+        $('#sleep').on('click', '.delete', function () {
+            let btn = $(this);
+            const row = sleepTable.row(btn.closest('tr')).data();
+            const id = row[0];
+            if (confirm('Are you sure you want to delete this entry?')) {
+                $.ajax({
+                    url: '/delete_entry/',
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function () {
+                        sleepTable.row(btn.closest('tr')).remove().draw();
+                    }
+                });
+            }
+        });
+    });
+</script>
+    
+{% endblock %}

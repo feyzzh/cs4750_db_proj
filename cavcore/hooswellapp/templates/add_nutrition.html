@@ -9,17 +9,19 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Add Nutrition Log</h1>
-
-    <a href="{% url 'add_food' %}" style="
+    <div class="header-row" style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Add Nutrition Log</h1>
+        <a href="{% url 'add_food' %}" style="
             padding: 8px 16px;
             background-color: #4CAF50;
             color: white;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 14px;">
-        Add Food Item
-    </a>
+            font-size: 14px;
+        ">
+            Add Food Item
+        </a>
+    </div>
 
     <form method="POST" action="{% url 'add_nutrition' %}">
         {% csrf_token %}
