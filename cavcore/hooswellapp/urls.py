@@ -29,4 +29,6 @@ urlpatterns = [
     path('delete_entry/', views.delete_entry, name='delete_entry'),
     path('toggle_goal/<int:goal_id>/', views.toggle_goal, name='toggle_goal'),
     path('delete_goal/<int:goal_id>/', views.delete_goal, name='delete_goal'),
+    # path('nutrition/delete/<int:log_id>/', views.delete_nutrition_log, name='delete_nutrition_log'),
+    # path('nutrition/edit/<int:log_id>/', views.edit_nutrition_log, name='edit_nutrition_log'),
 ]

@@ -1,4 +1,5 @@
 {% load static %}
+{% load tz %}
 {% include 'base.html' %}
 
 
@@ -13,6 +14,7 @@
     </style>
 </head>
 {% block content %}
+<div style="padding: 0 20px 20px 20px;">
     <h1>Nutrition Log</h1>
     <table id="nutrition" class="display">
         <thead>
@@ -32,7 +34,7 @@
             <tr>
                 <td style="display:none;">{{ entry.id }}</td>
                 <td>{{ entry.food.food_item }}</td>
-                <td>{{ entry.time_of_consumption }}</td>
+                <td>{{ entry.time_of_consumption|timezone:"America/New_York" }}</td>
                 <td>{{ entry.num_grams_consumed }}</td>
                 <td>{{ entry.source }}</td>
                 <td>{{ entry.description }}</td>
@@ -61,8 +63,8 @@
             <tr>
                 <td style="display:none;">{{ entry.id }}</td>
                 <td>{{ entry.start_time }}</td>
-                <td>{{ entry.end_time }}</td>
-                <td>{{ entry.activity }}</td>
+                <td>{{ entry.end_time|timezone:"America/New_York" }}</td>
+                <td>{{ entry.activity|timezone:"America/New_York" }}</td>
                 <td>{{ entry.description }}</td>
                 <td><button class="edit">Edit</button></td>
                 <td><button class="delete">Delete</button></td>
@@ -88,8 +90,8 @@
         {% for entry in sleep_logs %}
             <tr>
                 <td style="display:none;">{{ entry.id }}</td>
-                <td>{{ entry.start_time }}</td>
-                <td>{{ entry.end_time }}</td>
+                <td>{{ entry.start_time|timezone:"America/New_York" }}</td>
+                <td>{{ entry.end_time|timezone:"America/New_York" }}</td>
                 <td>{{ entry.sleep_quality }}</td>
                 <td>{{ entry.description }}</td>
                 <td><button class="edit">Edit</button></td>
@@ -108,6 +110,7 @@
 
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -127,105 +130,6 @@
             columnDefs: [
                 { targets: 0, visible: false }  // Hide ID column, but keep it in data
             ]
-        });
-    
-        // --- EDIT HANDLERS ---
-        $('#nutrition').on('click', '.edit', function () {
-            const row = nutritionTable.row($(this).closest('tr')).data();
-            $('#editModal input[name="id"]').val(row[0]);
-            $('#editModal input[name="description"]').val(row[5]);
-            $('#editModal').show();
-        });
-    
-        $('#fitness').on('click', '.edit', function () {
-            const row = fitnessTable.row($(this).closest('tr')).data();
-            $('#editModal input[name="id"]').val(row[0]);
-            $('#editModal input[name="description"]').val(row[4]);
-            $('#editModal').show();
-        });
-    
-        $('#sleep').on('click', '.edit', function () {
-            const row = sleepTable.row($(this).closest('tr')).data();
-            $('#editModal input[name="id"]').val(row[0]);
-            $('#editModal input[name="description"]').val(row[4]);
-            $('#editModal').show();
-        });
-    
-        // --- SAVE CHANGES ---
-        $('#saveChanges').on('click', function () {
-            const id = $('#editModal input[name="id"]').val();
-            const description = $('#editModal input[name="description"]').val();
-    
-            $.ajax({
-                url: '/update_entry/',
-                method: 'POST',
-                data: {
-                    id: id,
-                    description: description,
-                    csrfmiddlewaretoken: '{{ csrf_token }}'
-                },
-                success: function () {
-                    location.reload(); // Refresh to show updated data
-                }
-            });
-        });
-    
-        // --- DELETE HANDLERS ---
-        $('#nutrition').on('click', '.delete', function () {
-            let btn = $(this);
-            const row = nutritionTable.row(btn.closest('tr')).data();
-            const id = row[0];
-            if (confirm('Are you sure you want to delete this entry?')) {
-                $.ajax({
-                    url: '/delete_entry/',
-                    method: 'POST',
-                    data: {
-                        id: id,
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    },
-                    success: function () {
-                        nutritionTable.row(btn.closest('tr')).remove().draw();
-                    }
-                });
-            }
-        });
-    
-        $('#fitness').on('click', '.delete', function () {
-            let btn = $(this);
-            const row = fitnessTable.row(btn.closest('tr')).data();
-            const id = row[0];
-            if (confirm('Are you sure you want to delete this entry?')) {
-                $.ajax({
-                    url: '/delete_entry/',
-                    method: 'POST',
-                    data: {
-                        id: id,
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    },
-                    success: function () {
-                        fitnessTable.row(btn.closest('tr')).remove().draw();
-                    }
-                });
-            }
-        });
-    
-        $('#sleep').on('click', '.delete', function () {
-            let btn = $(this);
-            const row = sleepTable.row(btn.closest('tr')).data();
-            const id = row[0];
-            if (confirm('Are you sure you want to delete this entry?')) {
-                $.ajax({
-                    url: '/delete_entry/',
-                    method: 'POST',
-                    data: {
-                        id: id,
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    },
-                    success: function () {
-                        sleepTable.row(btn.closest('tr')).remove().draw();
-                    }
-                });
-            }
         });
     });
 </script>
