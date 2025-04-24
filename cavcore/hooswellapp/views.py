@@ -485,7 +485,30 @@ def view_goals(request):
     nutrition_goals = NutritionGoals.objects.filter(user=user).order_by('-start_time')
     fitness_goals = FitnessGoals.objects.filter(user=user).order_by('-start_time')
     sleep_goals = SleepGoals.objects.filter(user=user).order_by('-start_time')
+    nutrition_goal_info=[]
     fitness_goal_info=[]
+    sleep_goal_info=[]
+    for goal in nutrition_goals:
+        food_logs = NutritionLog.objects.filter(
+            user=goal.user,
+            time_of_consumption__gte=goal.start_time,
+            time_of_consumption__lte=goal.end_time,
+        )
+        if goal.food:
+            food_logs = food_logs.filter(food=goal.food)
+        total_grams = food_logs.aggregate(total_grams=Sum('num_grams_consumed'))['total_grams']
+        if total_grams is None:
+            total_grams = 0
+        if total_grams < goal.lower_grams:
+            progress = (total_grams / goal.lower_grams) * 100
+            status = "Under"
+        elif goal.lower_grams <= total_grams <= goal.upper_grams:
+            progress = 100
+            status = "On Target"
+        else:
+            progress = 100 + ((total_grams - goal.upper_grams) / goal.upper_grams) * 100 #how far over max we are
+            status = "Over"
+        nutrition_goal_info.append({'goal': goal, 'progress': "{:.2f}".format(progress), 'status': status})
     for goal in fitness_goals:
         activities = FitnessLog.objects.filter(
             user=goal.user,
@@ -502,11 +525,33 @@ def view_goals(request):
             total_minutes = 0
         progress = (total_minutes / goal.target_minutes) * 100
         fitness_goal_info.append({'goal':goal,'progress':"{:.2f}".format(progress)})
+    for goal in sleep_goals:
+        sleeps = SleepLog.objects.filter(
+            user=goal.user,
+            start_time__gte=goal.start_time,  # find activities somewhere in goal's time
+            end_time__lte=goal.end_time,
+        )
+        total_hours = sum(
+            (sleep.end_time - sleep.start_time).total_seconds() / 60
+            for sleep in sleeps
+        ) /60
+        if total_hours is None:
+            total_hours = 0
+        progress = (total_hours / float(goal.target_hours)) * 100
+        total_quality = sum(sleep.sleep_quality for sleep in sleeps)
+        count = sleeps.count()
+        avg_quality = total_quality / count if count > 0 else 0
+        avg_10 = avg_quality * 10
+        target_10 = goal.target_quality * 10
+        sleep_goal_info.append({'goal': goal, 'progress': "{:.2f}".format(progress),
+                                'avg_quality': "{:.2f}".format(avg_quality),
+                               'avg_10':avg_10,'target_10': target_10}
+                               )
     context={
         'goals': goals,
-        'nutrition_goals': nutrition_goals,
+        'nutrition_goals': nutrition_goal_info,
         'fitness_goals': fitness_goal_info,
-        'sleep_goals': sleep_goals
+        'sleep_goals': sleep_goal_info
     }
     return render(request, 'goals.html', context)
 
