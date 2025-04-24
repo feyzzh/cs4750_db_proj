@@ -748,7 +748,7 @@ def add_event(request):
             EventParticipants.objects.create(event=event, participant=custom_user)
             return redirect('home')
     else:
-        form = FitnessLogForm()
+        form = EventForm()
 
     return render(request, 'add_event.html', {'form': form})
 
@@ -798,4 +798,21 @@ def delete_event(request):
             messages.success(request, "Event deleted successfully.")
         else:
             messages.error(request, "You do not have permission to delete this event.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+@login_required
+def resolve_event(request):
+    if request.method == "POST":
+        event_id = request.POST.get("resolve_event_id")
+        event = Events.objects.get(event_id=event_id)
+        participants = EventParticipants.objects.filter(event=event)
+        for participant in participants:
+            FitnessLog.objects.create(
+                user=participant.participant,
+                activity=event.activity,
+                start_time=event.start_time,
+                end_time=event.end_time,
+                description=event.description
+            )
+        event.delete()
         return redirect(request.META.get("HTTP_REFERER", "/"))
