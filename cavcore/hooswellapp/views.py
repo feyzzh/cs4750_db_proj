@@ -194,6 +194,9 @@ def add_goal(request, goal_type):
                 return HttpResponse("No matching user found.", status=400)
 
             goals.user = custom_user
+            goals.goal_type=goal_type
+            if goal_type not in ['wellness','sleep','fitness','nutrition']:
+                goals.goal_type='wellness'
             goals.save()
             return redirect('home')
     else:

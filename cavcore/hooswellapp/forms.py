@@ -91,7 +91,7 @@ class FitnessLogForm(forms.ModelForm):
 class GoalForm(forms.ModelForm):
     class Meta:
         model = Goals
-        fields = ['goal_type', 'start_time', 'end_time', 'completed', 'description']
+        fields = ['start_time', 'end_time', 'completed', 'description']
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
@@ -99,7 +99,7 @@ class GoalForm(forms.ModelForm):
 class NutritionGoalForm(forms.ModelForm):
     class Meta:
         model = NutritionGoals
-        fields = ['goal_type', 'start_time', 'end_time', 'completed', 'description', 'food', 'lower_grams', 'upper_grams']
+        fields = ['start_time', 'end_time', 'completed', 'description', 'food', 'lower_grams', 'upper_grams']
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
@@ -112,7 +112,7 @@ class NutritionGoalForm(forms.ModelForm):
 class FitnessGoalForm(forms.ModelForm):
     class Meta:
         model = FitnessGoals
-        fields = ['goal_type', 'start_time', 'end_time', 'completed', 'description', 'activity', 'target_minutes']
+        fields = ['start_time', 'end_time', 'completed', 'description', 'activity', 'target_minutes']
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
@@ -120,7 +120,7 @@ class FitnessGoalForm(forms.ModelForm):
 class SleepGoalForm(forms.ModelForm):
     class Meta:
         model = SleepGoals
-        fields = ['goal_type', 'start_time', 'end_time', 'completed', 'description', 'target_quality', 'target_hours']
+        fields = ['start_time', 'end_time', 'completed', 'description', 'target_quality', 'target_hours']
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
