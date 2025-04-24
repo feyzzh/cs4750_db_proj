@@ -665,6 +665,7 @@ def add_event(request):
 
             event.host = custom_user
             event.save()
+            EventParticipants.objects.create(event=event, participant=custom_user)
             return redirect('home')
     else:
         form = FitnessLogForm()
@@ -703,6 +704,22 @@ def enroll(request):
         return redirect(request.META.get("HTTP_REFERER", "/"))
 
 @login_required
+def delete_event(request):
+    if request.method == "POST":
+        user_email = request.user.email
+        try:
+            user = Users.objects.get(email=user_email)
+        except Users.DoesNotExist:
+            return render(request, 'error.html', {'message': 'User not found.'})
+        event_id = request.POST.get("delete_event_id")
+        event = Events.objects.get(event_id=event_id)
+        if event.host == user:
+            event.delete()
+            messages.success(request, "Event deleted successfully.")
+        else:
+            messages.error(request, "You do not have permission to delete this event.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
 def delete_event(request):
     if request.method == "POST":
         user_email = request.user.email
