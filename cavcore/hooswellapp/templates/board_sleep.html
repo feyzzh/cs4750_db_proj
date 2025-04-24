@@ -1,0 +1,85 @@
+{% block content %}
+{% include 'board.html' %}
+<div id="sleep" class="tab-content" style="padding: 20px;">
+    <div class="header-row" style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Sleep Overview</h2>
+        <a href="{% url 'add_sleep' %}" style="padding: 8px 16px; background-color: #673AB7; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;">Add Sleep Entry</a>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <label><strong>Select Date:</strong></label>
+        <input type="date" id="selected-sleep-date" />
+    </div>
+
+    <h3>Sleep Details on Selected Day</h3>
+    <table border="1" style="width: 100%; margin-bottom: 20px;">
+        <thead>
+            <tr>
+                <th>Start</th>
+                <th>End</th>
+                <th>Total Hours</th>
+            </tr>
+        </thead>
+        <tbody id="sleep-day-table"></tbody>
+    </table>
+
+    <h3>Recent Sleep Entries</h3>
+    <table border="1" style="width: 100%;">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Sleep Start</th>
+                <th>Sleep End</th>
+                <th>Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in sleep_logs %}
+            <tr>
+                <td>{{ log.sleep_date }}</td>
+                <td>{{ log.start_time }}</td>
+                <td>{{ log.end_time }}</td>
+                <td>{{ log.total_hours }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sleepLogs = {{ sleep_logs_by_date|safe }};
+        const selectedDateInput = document.getElementById('selected-sleep-date');
+        const dayTable = document.getElementById('sleep-day-table');
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function updateSleepView(date) {
+            const dateStr = formatDate(date);
+            selectedDateInput.value = dateStr;
+            const logs = sleepLogs[dateStr] || [];
+
+            dayTable.innerHTML = '';
+            logs.forEach(log => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${log.start_time}</td>
+                    <td>${log.end_time}</td>
+                    <td>${log.total_hours}</td>
+                `;
+                dayTable.appendChild(row);
+            });
+        }
+
+        selectedDateInput.addEventListener('change', () => {
+            const selected = new Date(selectedDateInput.value);
+            if (!isNaN(selected)) updateSleepView(selected);
+        });
+
+        updateSleepView(new Date());
+    });
+</script>
+{% endblock %}

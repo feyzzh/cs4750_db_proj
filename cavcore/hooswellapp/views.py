@@ -112,7 +112,7 @@ def add_nutrition(request):
 
             nutrition_log.user = custom_user
             nutrition_log.save()
-            return redirect('home')
+            return redirect('fit_dash')
     else:
         form = NutritionLogForm()
 
@@ -133,7 +133,7 @@ def add_sleep(request):
 
             sleep_log.user = custom_user
             sleep_log.save()
-            return redirect('home')
+            return redirect('sleep_dash')
     else:
         form = SleepLogForm()
 
@@ -337,6 +337,101 @@ def nutrition_dashboard(request):
     }
 
     return render(request, 'board_nutrition.html', context)
+
+@login_required
+def fitness_dashboard(request):
+    user = Users.objects.get(email=request.user.email)
+    selected_date_str = request.GET.get('date')
+    try:
+        selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date() if selected_date_str else timezone.localdate()
+    except ValueError:
+        selected_date = timezone.localdate()
+
+    fitness_logs = FitnessLog.objects.filter(user=user).order_by('-start_time')
+
+    grouped_logs = defaultdict(list)
+    for log in fitness_logs:
+        log_date = log.start_time.date()
+        duration_minutes = int((log.end_time - log.start_time).total_seconds() // 60)  # Calculate duration
+        grouped_logs[str(log_date)].append({
+            'activity': log.activity, 
+            'duration_minutes': duration_minutes,
+            'time_of_workout': log.start_time.strftime('%Y-%m-%d %H:%M'),
+        })
+
+    recent_logs = fitness_logs[:10]
+
+    day_logs = grouped_logs.get(str(selected_date), [])
+
+    start_of_week = selected_date - timedelta(days=selected_date.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+    weekly_logs = []
+    for i in range(7):
+        date_str = str(start_of_week + timedelta(days=i))
+        weekly_logs.extend(grouped_logs.get(date_str, []))
+    total_duration_today = sum([log['duration_minutes'] for log in day_logs]) / 60
+    total_duration_week = sum([log['duration_minutes'] for log in weekly_logs]) / 60
+
+    weekly_hours_per_day = []
+    for i in range(7):
+        date = start_of_week + timedelta(days=i)
+        logs = grouped_logs.get(str(date), [])
+        total = sum([log['duration_minutes'] for log in logs]) / 60
+        weekly_hours_per_day.append({'day': calendar.day_name[date.weekday()], 'hours': total})
+
+    fitness_logs_by_date = json.dumps(grouped_logs)
+
+    context = {
+        'selected_date': selected_date,
+        'fitness_logs': recent_logs,
+        'fitness_logs_by_date': fitness_logs_by_date,
+        'total_duration_today': total_duration_today,
+        'total_duration_week': total_duration_week,
+        'weekly_hours_per_day': weekly_hours_per_day,
+    }
+
+    return render(request, 'board_fitness.html', context)
+
+
+@login_required
+def sleep_dashboard(request):
+    user = Users.objects.get(email=request.user.email)
+    selected_date_str = request.GET.get('date')
+    try:
+        selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date() if selected_date_str else timezone.localdate()
+    except ValueError:
+        selected_date = timezone.localdate()
+
+    sleep_logs_qs = SleepLog.objects.filter(user=user).order_by('-start_time')
+
+    recent_logs = []
+    for log in sleep_logs_qs[:10]:
+        total_hours = round((log.end_time - log.start_time).total_seconds() / 3600, 2)
+        recent_logs.append({
+            'sleep_date': log.start_time.date(),
+            'start_time': log.start_time.strftime('%Y-%m-%d %H:%M'),
+            'end_time': log.end_time.strftime('%Y-%m-%d %H:%M'),
+            'total_hours': total_hours,
+        })
+
+    grouped_logs = defaultdict(list)
+    for log in sleep_logs_qs:
+        log_date = log.start_time.date()
+        total_hours = round((log.end_time - log.start_time).total_seconds() / 3600, 2)
+        grouped_logs[str(log_date)].append({
+            'start_time': log.start_time.strftime('%Y-%m-%d %H:%M'),
+            'end_time': log.end_time.strftime('%Y-%m-%d %H:%M'),
+            'total_hours': total_hours,
+        })
+
+    sleep_logs_by_date = json.dumps(grouped_logs)
+
+    context = {
+        'sleep_logs': recent_logs,
+        'sleep_logs_by_date': sleep_logs_by_date,
+        'selected_date': selected_date,
+    }
+    return render(request, 'board_sleep.html', context)
 
 @login_required
 def entry_manager(request):
