@@ -129,8 +129,10 @@ class SleepGoalForm(forms.ModelForm):
 class EventForm(forms.ModelForm):
     class Meta:
         model = Events
-        fields = ['start_time', 'end_time', 'description']
+        fields = ['title', 'activity', 'start_time', 'end_time', 'description']
         widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'e.g., Community Running Event'}),
+            'activity': forms.TextInput(attrs={'placeholder': 'e.g., Running'}),
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }

@@ -136,6 +136,8 @@ class EventParticipants(models.Model):
 class Events(models.Model):
     event_id = models.AutoField(primary_key=True)
     host = models.ForeignKey('Users', models.DO_NOTHING)
+    title = models.TextField()
+    activity = models.TextField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     description = models.TextField()

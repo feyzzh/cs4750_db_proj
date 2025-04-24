@@ -11,6 +11,8 @@
     <h1>Available Events</h1>
     {% for event in events %}
         <div class="event">
+            <p><strong>Title:</strong> {{ event.title }}</p>
+            <p><strong>Activity:</strong> {{ event.activity }}</p>
             <p><strong>Host:</strong> {{ event.host.first_name }}</p>
             <p><strong>Start:</strong> {{ event.start_time }}</p>
             <p><strong>End:</strong> {{ event.end_time }}</p>
@@ -26,6 +28,8 @@
     <h1>Your Enrolled Events</h1>
     {% for enrollment in enrolled %}
         <div class="event">
+            <p><strong>Title:</strong> {{ event.title }}</p>
+            <p><strong>Activity:</strong> {{ event.activity }}</p>
             <p><strong>Event:</strong> {{ enrollment.event.description }}</p>
             <p><strong>Host:</strong> {{ enrollment.event.host.first_name }}</p>
             <p><strong>Start:</strong> {{ enrollment.event.start_time }}</p>
@@ -38,6 +42,8 @@
     <h1>Your Hosted Events</h1>
     {% for event in hosted %}
         <div class="event">
+            <p><strong>Title:</strong> {{ event.title }}</p>
+            <p><strong>Activity:</strong> {{ event.activity }}</p>
             <p><strong>Description:</strong> {{ event.description }}</p>
             <p><strong>Start:</strong> {{ event.start_time }}</p>
             <p><strong>End:</strong> {{ event.end_time }}</p>
@@ -47,7 +53,7 @@
                     <input type="hidden" name="delete_event_id" value="{{ event.event_id }}">
                     <button type="submit" style="background-color: red; color: white;">Delete</button>
                 </form>
-                <form method="post" style="display: inline;">
+                <form method="post" action="{% url 'resolve_event' %}" style="display: inline;">
                     {% csrf_token %}
                     <input type="hidden" name="resolve_event_id" value="{{ event.event_id }}">
                     <button type="submit" style="background-color: green; color: white;">Resolve</button>
