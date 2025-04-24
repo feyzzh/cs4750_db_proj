@@ -459,9 +459,12 @@ def update_entry(request):
     try:
         entry_type = request.POST.get('type')
         user_pk = request.POST.get('user_pk')
-        other_pks = request.POST.get('other_pks').split(',')
+        other_pks = request.POST.get('other_pks', '').split(',')
         description = request.POST.get('description')
         auth_user = request.user
+
+        if not all([entry_type, user_pk, other_pks, description]):
+            return JsonResponse({'success': False, 'error': 'Missing required parameters'})
 
         try:
             custom_user = Users.objects.get(email=auth_user.email)
@@ -471,17 +474,39 @@ def update_entry(request):
         if entry_type == 'nutrition':
             food_id = int(other_pks[0])
             time_of_consumption = parse_datetime(other_pks[1])
-            entry = get_object_or_404(NutritionLog, user=custom_user, food_id=food_id, time_of_consumption=time_of_consumption)
+            entry = get_object_or_404(
+                NutritionLog, 
+                user=custom_user, 
+                food_id=food_id,
+                time_of_consumption=time_of_consumption
+            )
             entry.description = description
             entry.save()
         elif entry_type == 'fitness':
-            entry = get_object_or_404(FitnessLog, user=custom_user, start_time=other_pks[0], end_time=other_pks[1])
+            entry = get_object_or_404(
+                FitnessLog,
+                user=custom_user,
+                start_time=other_pks[0],
+                end_time=other_pks[1]
+            )
             entry.description = description
             entry.save()
         elif entry_type == 'sleep':
-            entry = get_object_or_404(SleepLog, user=custom_user, start_time=other_pks[0], end_time=other_pks[1])
+            entry = get_object_or_404(
+                SleepLog,
+                user=custom_user,
+                start_time=other_pks[0],
+                end_time=other_pks[1]
+            )
             entry.description = description
             entry.save()
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid entry type'})
+
+        return JsonResponse({'success': True})
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
 def goals_manager(request):
@@ -556,10 +581,6 @@ def goals_manager(request):
 #         except Exception as e:
 #             return JsonResponse({'success': False, 'error': str(e)})
         
-        return JsonResponse({'success': True})
-    
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
 
 @require_POST
 @csrf_exempt
