@@ -1,14 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm, GoalForm
-from .models import NutritionLog, SleepLog, FitnessLog, Goals
+from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm, GoalForm, NutritionGoalForm, \
+    FitnessGoalForm, SleepGoalForm, EventForm
+from .models import NutritionLog, SleepLog, FitnessLog, Goals, NutritionGoals, FitnessGoals, SleepGoals, Events, \
+    EventParticipants
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from .models import Users
 from .forms import SignupForm
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
-from django.db.models import Sum, Avg, Count
+from django.db.models import Sum, Avg, Count, Q
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_datetime
@@ -112,7 +115,7 @@ def add_nutrition(request):
 
             nutrition_log.user = custom_user
             nutrition_log.save()
-            return redirect('home')
+            return redirect('fit_dash')
     else:
         form = NutritionLogForm()
 
@@ -133,7 +136,7 @@ def add_sleep(request):
 
             sleep_log.user = custom_user
             sleep_log.save()
-            return redirect('home')
+            return redirect('sleep_dash')
     else:
         form = SleepLogForm()
 
@@ -163,9 +166,15 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 
 @login_required
-def add_goal(request):
+def add_goal(request, goal_type):
     if request.method == 'POST':
         form = GoalForm(request.POST)
+        if goal_type == 'nutrition':
+            form = NutritionGoalForm(request.POST)
+        elif goal_type == 'fitness':
+            form = FitnessGoalForm(request.POST)
+        elif goal_type == 'sleep':
+            form = SleepGoalForm(request.POST)
         if form.is_valid():
             goals = form.save(commit=False)
             auth_user = request.user
@@ -179,7 +188,16 @@ def add_goal(request):
             return redirect('home')
     else:
         form = GoalForm()
-    return render(request, 'add_goal.html', {'form': form})
+        if goal_type == 'nutrition':
+            form = NutritionGoalForm()
+        elif goal_type == 'fitness':
+            form = FitnessGoalForm()
+        elif goal_type == 'sleep':
+            form = SleepGoalForm()
+    return render(request, 'add_goal.html', {'form': form,'goal_type':goal_type})
+@login_required
+def add_goal_helper(request):
+    return render(request, 'goal_helper.html')
 
 @login_required
 def stats_dashboard(request):
@@ -230,21 +248,6 @@ def stats_dashboard(request):
 
     return render(request, 'stats_dashboard.html', context)
 
-
-@login_required
-def dashboard(request):
-
-    user_email = request.user.email
-    try:
-        user = Users.objects.get(email=user_email)
-    except Users.DoesNotExist:
-        return render(request, 'error.html', {'message': 'User not found.'})
-
-    context = {
-
-    }
-
-    return render(request, 'dashboard.html', context)
 
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -337,6 +340,101 @@ def nutrition_dashboard(request):
     return render(request, 'board_nutrition.html', context)
 
 @login_required
+def fitness_dashboard(request):
+    user = Users.objects.get(email=request.user.email)
+    selected_date_str = request.GET.get('date')
+    try:
+        selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date() if selected_date_str else timezone.localdate()
+    except ValueError:
+        selected_date = timezone.localdate()
+
+    fitness_logs = FitnessLog.objects.filter(user=user).order_by('-start_time')
+
+    grouped_logs = defaultdict(list)
+    for log in fitness_logs:
+        log_date = log.start_time.date()
+        duration_minutes = int((log.end_time - log.start_time).total_seconds() // 60)  # Calculate duration
+        grouped_logs[str(log_date)].append({
+            'activity': log.activity, 
+            'duration_minutes': duration_minutes,
+            'time_of_workout': log.start_time.strftime('%Y-%m-%d %H:%M'),
+        })
+
+    recent_logs = fitness_logs[:10]
+
+    day_logs = grouped_logs.get(str(selected_date), [])
+
+    start_of_week = selected_date - timedelta(days=selected_date.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+    weekly_logs = []
+    for i in range(7):
+        date_str = str(start_of_week + timedelta(days=i))
+        weekly_logs.extend(grouped_logs.get(date_str, []))
+    total_duration_today = sum([log['duration_minutes'] for log in day_logs]) / 60
+    total_duration_week = sum([log['duration_minutes'] for log in weekly_logs]) / 60
+
+    weekly_hours_per_day = []
+    for i in range(7):
+        date = start_of_week + timedelta(days=i)
+        logs = grouped_logs.get(str(date), [])
+        total = sum([log['duration_minutes'] for log in logs]) / 60
+        weekly_hours_per_day.append({'day': calendar.day_name[date.weekday()], 'hours': total})
+
+    fitness_logs_by_date = json.dumps(grouped_logs)
+
+    context = {
+        'selected_date': selected_date,
+        'fitness_logs': recent_logs,
+        'fitness_logs_by_date': fitness_logs_by_date,
+        'total_duration_today': total_duration_today,
+        'total_duration_week': total_duration_week,
+        'weekly_hours_per_day': weekly_hours_per_day,
+    }
+
+    return render(request, 'board_fitness.html', context)
+
+
+@login_required
+def sleep_dashboard(request):
+    user = Users.objects.get(email=request.user.email)
+    selected_date_str = request.GET.get('date')
+    try:
+        selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date() if selected_date_str else timezone.localdate()
+    except ValueError:
+        selected_date = timezone.localdate()
+
+    sleep_logs_qs = SleepLog.objects.filter(user=user).order_by('-start_time')
+
+    recent_logs = []
+    for log in sleep_logs_qs[:10]:
+        total_hours = round((log.end_time - log.start_time).total_seconds() / 3600, 2)
+        recent_logs.append({
+            'sleep_date': log.start_time.date(),
+            'start_time': log.start_time.strftime('%Y-%m-%d %H:%M'),
+            'end_time': log.end_time.strftime('%Y-%m-%d %H:%M'),
+            'total_hours': total_hours,
+        })
+
+    grouped_logs = defaultdict(list)
+    for log in sleep_logs_qs:
+        log_date = log.start_time.date()
+        total_hours = round((log.end_time - log.start_time).total_seconds() / 3600, 2)
+        grouped_logs[str(log_date)].append({
+            'start_time': log.start_time.strftime('%Y-%m-%d %H:%M'),
+            'end_time': log.end_time.strftime('%Y-%m-%d %H:%M'),
+            'total_hours': total_hours,
+        })
+
+    sleep_logs_by_date = json.dumps(grouped_logs)
+
+    context = {
+        'sleep_logs': recent_logs,
+        'sleep_logs_by_date': sleep_logs_by_date,
+        'selected_date': selected_date,
+    }
+    return render(request, 'board_sleep.html', context)
+
+@login_required
 def entry_manager(request):
     user_email = request.user.email
     try:
@@ -353,6 +451,7 @@ def entry_manager(request):
         'fitness_logs': fitness_logs,
         'sleep_logs': sleep_logs,
     })
+
 
 @require_POST
 @csrf_exempt
@@ -383,6 +482,79 @@ def update_entry(request):
             entry = get_object_or_404(SleepLog, user=custom_user, start_time=other_pks[0], end_time=other_pks[1])
             entry.description = description
             entry.save()
+
+@login_required
+def goals_manager(request):
+    user_email = request.user.email
+    try:
+        user = Users.objects.get(email=user_email)
+    except Users.DoesNotExist:
+        return render(request, 'error.html', {'message': 'User not found.'})
+
+    nutrition_goals = NutritionGoals.objects.select_related('goals_ptr', 'food').filter(goals_ptr__user_id=user.user_id)
+    fitness_goals = FitnessGoals.objects.select_related('goals_ptr').filter(goals_ptr__user_id=user.user_id)
+    sleep_goals = SleepGoals.objects.select_related('goals_ptr').filter(goals_ptr__user_id=user.user_id)
+    wellness_goals = Goals.objects.filter(user_id=user.user_id, goal_type='wellness')
+
+    return render(request, 'goal_manager.html', {
+        'nutrition_goals': nutrition_goals,
+        'fitness_goals': fitness_goals,
+        'sleep_goals': sleep_goals,
+        'wellness_goals': wellness_goals,
+    })
+
+# from django.http import JsonResponse
+# from django.views.decorators.csrf import csrf_exempt
+# from django.db import connection
+# import json
+
+
+# @csrf_exempt
+# def update_entry(request):
+#     if request.method == 'POST':
+#         # Get the incoming data (JSON)
+#         data = json.loads(request.body)
+#         entry_id = data.get('id')
+#         description = data.get('description')
+
+#         # Determine the correct table and primary key logic based on the ID passed (for each table)
+#         table = data.get('table')
+        
+#         # Construct raw SQL queries for each type of log (nutrition, fitness, sleep)
+#         if table == 'nutrition_log':
+#             query = """
+#                 UPDATE nutrition_log
+#                 SET description = %s
+#                 WHERE user_id = %s AND food_id = %s AND time_of_consumption = %s
+#             """
+#             # You need to extract the composite key (user_id, food_id, and time_of_consumption)
+#             user_id, food_id, time_of_consumption = get_composite_key_values(entry_id)
+#         elif table == 'fitness_log':
+#             query = """
+#                 UPDATE fitness_log
+#                 SET description = %s
+#                 WHERE user_id = %s AND start_time = %s AND end_time = %s
+#             """
+#             # Extract the composite key (user_id, start_time, end_time)
+#             user_id, start_time, end_time = get_composite_key_values(entry_id)
+#         elif table == 'sleep_log':
+#             query = """
+#                 UPDATE sleep_log
+#                 SET description = %s
+#                 WHERE user_id = %s AND start_time = %s AND end_time = %s
+#             """
+#             # Extract the composite key (user_id, start_time, end_time)
+#             user_id, start_time, end_time = get_composite_key_values(entry_id)
+#         else:
+#             return JsonResponse({'success': False, 'error': 'Invalid table name'})
+
+#         # Execute the raw SQL query
+#         try:
+#             with connection.cursor() as cursor:
+#                 cursor.execute(query, [description, user_id, food_id, time_of_consumption])
+#             return JsonResponse({'success': True})
+#         except Exception as e:
+#             return JsonResponse({'success': False, 'error': str(e)})
         
         return JsonResponse({'success': True})
     
@@ -431,9 +603,76 @@ def view_goals(request):
         return render(request, 'error.html', {'message': 'User not found.'})
 
     goals = Goals.objects.filter(user=user).order_by('-start_time')
-
+    nutrition_goals = NutritionGoals.objects.filter(user=user).order_by('-start_time')
+    fitness_goals = FitnessGoals.objects.filter(user=user).order_by('-start_time')
+    sleep_goals = SleepGoals.objects.filter(user=user).order_by('-start_time')
+    nutrition_goal_info=[]
+    fitness_goal_info=[]
+    sleep_goal_info=[]
+    for goal in nutrition_goals:
+        food_logs = NutritionLog.objects.filter(
+            user=goal.user,
+            time_of_consumption__gte=goal.start_time,
+            time_of_consumption__lte=goal.end_time,
+        )
+        if goal.food:
+            food_logs = food_logs.filter(food=goal.food)
+        total_grams = food_logs.aggregate(total_grams=Sum('num_grams_consumed'))['total_grams']
+        if total_grams is None:
+            total_grams = 0
+        if total_grams < goal.lower_grams:
+            progress = (total_grams / goal.lower_grams) * 100
+            status = "Under"
+        elif goal.lower_grams <= total_grams <= goal.upper_grams:
+            progress = 100
+            status = "On Target"
+        else:
+            progress = 100 + ((total_grams - goal.upper_grams) / goal.upper_grams) * 100 #how far over max we are
+            status = "Over"
+        nutrition_goal_info.append({'goal': goal, 'progress': "{:.2f}".format(progress), 'status': status})
+    for goal in fitness_goals:
+        activities = FitnessLog.objects.filter(
+            user=goal.user,
+            start_time__gte=goal.start_time,  # find activities somewhere in goal's time
+            end_time__lte=goal.end_time,
+        )
+        if goal.activity:
+            activities = activities.filter(activity=goal.activity)
+        total_minutes = sum(
+            (activity.end_time - activity.start_time).total_seconds() / 60
+            for activity in activities
+        )
+        if total_minutes is None:
+            total_minutes = 0
+        progress = (total_minutes / goal.target_minutes) * 100
+        fitness_goal_info.append({'goal':goal,'progress':"{:.2f}".format(progress)})
+    for goal in sleep_goals:
+        sleeps = SleepLog.objects.filter(
+            user=goal.user,
+            start_time__gte=goal.start_time,  # find activities somewhere in goal's time
+            end_time__lte=goal.end_time,
+        )
+        total_hours = sum(
+            (sleep.end_time - sleep.start_time).total_seconds() / 60
+            for sleep in sleeps
+        ) /60
+        if total_hours is None:
+            total_hours = 0
+        progress = (total_hours / float(goal.target_hours)) * 100
+        total_quality = sum(sleep.sleep_quality for sleep in sleeps)
+        count = sleeps.count()
+        avg_quality = total_quality / count if count > 0 else 0
+        avg_10 = avg_quality * 10
+        target_10 = goal.target_quality * 10
+        sleep_goal_info.append({'goal': goal, 'progress': "{:.2f}".format(progress),
+                                'avg_quality': "{:.2f}".format(avg_quality),
+                               'avg_10':avg_10,'target_10': target_10}
+                               )
     context={
-        'goals': goals
+        'goals': goals,
+        'nutrition_goals': nutrition_goal_info,
+        'fitness_goals': fitness_goal_info,
+        'sleep_goals': sleep_goal_info
     }
     return render(request, 'goals.html', context)
 
@@ -461,3 +700,71 @@ def delete_goal(request, goal_id):
             return redirect('profile')
         except Exception as e:
             return redirect('profile')
+
+def add_event(request):
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            auth_user = request.user
+            try:
+                custom_user = Users.objects.get(email=auth_user.email)
+            except Users.DoesNotExist:
+                return HttpResponse("No matching user found.", status=400)
+
+            event.host = custom_user
+            event.save()
+            EventParticipants.objects.create(event=event, participant=custom_user)
+            return redirect('home')
+    else:
+        form = FitnessLogForm()
+
+    return render(request, 'add_event.html', {'form': form})
+
+@login_required
+def view_events(request):
+    user_email = request.user.email
+    try:
+        user = Users.objects.get(email=user_email)
+    except Users.DoesNotExist:
+        return render(request, 'error.html', {'message': 'User not found.'})
+    events = Events.objects.order_by('-start_time')
+    hosted_events = Events.objects.filter(host=user)
+    enrolled_events = EventParticipants.objects.filter(participant=user)
+    context = {
+        'events': events,
+        'hosted': hosted_events,
+        'enrolled': enrolled_events
+    }
+    return render(request, 'events.html', context)
+
+@login_required
+def enroll(request):
+    if request.method == 'POST':
+        user_email = request.user.email
+        try:
+            user = Users.objects.get(email=user_email)
+        except Users.DoesNotExist:
+            return render(request, 'error.html', {'message': 'User not found.'})
+        event_id = request.POST.get('enroll_event_id')
+        event = Events.objects.get(event_id=event_id)
+        if not EventParticipants.objects.filter(event=event, participant=user).exists():
+            EventParticipants.objects.create(event=event, participant=user)
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+@login_required
+def delete_event(request):
+    if request.method == "POST":
+        user_email = request.user.email
+        try:
+            user = Users.objects.get(email=user_email)
+        except Users.DoesNotExist:
+            return render(request, 'error.html', {'message': 'User not found.'})
+        event_id = request.POST.get("delete_event_id")
+        event = Events.objects.get(event_id=event_id)
+        if event.host == user:
+            event.delete()
+            messages.success(request, "Event deleted successfully.")
+        else:
+            messages.error(request, "You do not have permission to delete this event.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))

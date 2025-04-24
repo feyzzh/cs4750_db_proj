@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create New Goal{% endblock %}
+
+{% block extra_head %}
+{% endblock %}
+    
+{% block content %}
+    <h1>Create New Goal</h1>
+    <h2>Select goal type:</h2>
+    <div class="button-container">
+        <a href="{% url 'add_goal' goal_type='nutrition' %}" class="button">Nutrition</a>
+        <a href="{% url 'add_goal' goal_type='fitness' %}" class="button">Fitness</a>
+        <a href="{% url 'add_goal' goal_type='sleep' %}" class="button">Sleep</a>
+        <a href="{% url 'add_goal' goal_type='wellness' %}" class="button">General Wellness</a>
+    </div>
+{% endblock %}

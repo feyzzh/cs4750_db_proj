@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create New Event{% endblock %}
+
+{% block extra_head %}
+{% endblock %}
+
+{% block content %}
+<body>
+    <h1>Available Events</h1>
+    {% for event in events %}
+        <div class="event">
+            <p><strong>Host:</strong> {{ event.host.first_name }}</p>
+            <p><strong>Start:</strong> {{ event.start_time }}</p>
+            <p><strong>End:</strong> {{ event.end_time }}</p>
+            <p><strong>Description:</strong> {{ event.description }}</p>
+            <form method="post" action="{% url 'enroll' %}" class="buttons">
+                {% csrf_token %}
+                <input type="hidden" name="enroll_event_id" value="{{ event.event_id }}">
+                <button type="submit">Enroll</button>
+            </form>
+        </div>
+    {% endfor %}
+
+    <h1>Your Enrolled Events</h1>
+    {% for enrollment in enrolled %}
+        <div class="event">
+            <p><strong>Event:</strong> {{ enrollment.event.description }}</p>
+            <p><strong>Host:</strong> {{ enrollment.event.host.first_name }}</p>
+            <p><strong>Start:</strong> {{ enrollment.event.start_time }}</p>
+            <p><strong>End:</strong> {{ enrollment.event.end_time }}</p>
+        </div>
+    {% empty %}
+        <p>You are not enrolled in any events.</p>
+    {% endfor %}
+
+    <h1>Your Hosted Events</h1>
+    {% for event in hosted %}
+        <div class="event">
+            <p><strong>Description:</strong> {{ event.description }}</p>
+            <p><strong>Start:</strong> {{ event.start_time }}</p>
+            <p><strong>End:</strong> {{ event.end_time }}</p>
+            <div class="buttons">
+                <form method="post" action="{% url 'delete_event' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_event_id" value="{{ event.event_id }}">
+                    <button type="submit" style="background-color: red; color: white;">Delete</button>
+                </form>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="resolve_event_id" value="{{ event.event_id }}">
+                    <button type="submit" style="background-color: green; color: white;">Resolve</button>
+                </form>
+            </div>
+        </div>
+    {% empty %}
+        <p>You are not hosting any events.</p>
+    {% endfor %}
+</body>
+{% endblock %}

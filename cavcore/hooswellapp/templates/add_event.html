@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Create New Goal{% endblock %}
+{% block title %}Create New Event{% endblock %}
 
 {% block extra_head %}
 {% endblock %}
     
 {% block content %}
-    <h1>Create New {{ goal_type }} Goal</h1>
-    <form method="POST" action="{% url 'add_goal' goal_type=goal_type%}">
+    <h1>Create New Event</h1>
+    <form method="POST" action="{% url 'add_event' %}">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Save Goal">
+        <input type="submit" value="Save Event">
     </form>
     <a href="{% url 'home' %}">Back to Home</a>
 {% endblock %}

@@ -178,10 +178,17 @@ class Foods(models.Model):
 
 
 class Goals(models.Model):
+    GOAL_TYPE_CHOICES = [
+        ('fitness', 'Fitness'),
+        ('nutrition', 'Nutrition'),
+        ('sleep', 'Sleep'),
+        ('wellness', 'Wellness'),
+    ]
+
     # pk = models.CompositePrimaryKey('goal_id', 'user_id')
     goal_id = models.AutoField(primary_key=True)
     user = models.ForeignKey('Users', models.DO_NOTHING)
-    goal_type = models.CharField(max_length=20)
+    goal_type = models.CharField(max_length=20, choices=GOAL_TYPE_CHOICES)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(blank=True, null=True)
     completed = models.BooleanField()
@@ -190,9 +197,29 @@ class Goals(models.Model):
     class Meta:
         managed = False
         db_table = 'goals'
-        unique_together = (('goal_id', 'user'),)
 
+class NutritionGoals(Goals):
+    food = models.ForeignKey(Foods, models.DO_NOTHING, null=True)
+    lower_grams = models.IntegerField()
+    upper_grams = models.IntegerField()
 
+    class Meta:
+        managed = True
+        db_table = 'nutrition_goals'
+class FitnessGoals(Goals):
+    activity = models.CharField(max_length=20, null=True)
+    target_minutes = models.IntegerField()
+
+    class Meta:
+        managed = True
+        db_table = 'fitness_goals'
+class SleepGoals(Goals):
+    target_quality = models.DecimalField(max_digits=4, decimal_places=2)
+    target_hours = models.DecimalField(max_digits=4, decimal_places=2)
+
+    class Meta:
+        managed = True
+        db_table = 'sleep_goals'
 class NutritionLog(models.Model):
     pk = models.CompositePrimaryKey('user_id', 'food_id', 'time_of_consumption')
     # user = models.ForeignKey('Users', models.DO_NOTHING)
