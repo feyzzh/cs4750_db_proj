@@ -189,9 +189,29 @@ class Goals(models.Model):
     class Meta:
         managed = False
         db_table = 'goals'
-        unique_together = (('goal_id', 'user'),)
 
+class NutritionGoals(Goals):
+    food = models.ForeignKey(Foods, models.DO_NOTHING, null=True)
+    lower_grams = models.IntegerField()
+    upper_grams = models.IntegerField()
 
+    class Meta:
+        managed = True
+        db_table = 'nutrition_goals'
+class FitnessGoals(Goals):
+    activity = models.CharField(max_length=20, null=True)
+    target_minutes = models.IntegerField()
+
+    class Meta:
+        managed = True
+        db_table = 'fitness_goals'
+class SleepGoals(Goals):
+    target_quality = models.DecimalField(max_digits=4, decimal_places=2)
+    target_hours = models.DecimalField(max_digits=4, decimal_places=2)
+
+    class Meta:
+        managed = True
+        db_table = 'sleep_goals'
 class NutritionLog(models.Model):
     pk = models.CompositePrimaryKey('user_id', 'food_id', 'time_of_consumption')
     user = models.ForeignKey('Users', models.DO_NOTHING)

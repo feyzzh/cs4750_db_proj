@@ -2,17 +2,55 @@
 {% load static %}
 
 {% block title %}Goals{% endblock %}
-
+<style>
+.progress-container {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.progress-bar {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 20px;
+    margin-top: 10px;
+    position: relative;
+}
+.progress {
+    height: 100%;
+    background-color: #76c7c0;
+    width: 0%; /* Dynamically set via inline style */
+    transition: width 0.5s ease-in-out;
+}
+.progress-container p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+</style>
 {% block content %}
 <header>
     <h1>Dashboard</h1>
+    <!-- Tab Navigation -->
+    <div>
+        <button onclick="openTab('wellness')">All Goals</button>
+        <button onclick="openTab('nutrition')">Nutrition</button>
+        <button onclick="openTab('fitness')">Fitness</button>
+        <button onclick="openTab('sleep')">Sleep</button>
+    </div>
 </header>
-
-    <h2>Goals</h2>
+<section id="wellness" class="tab-content">
+       <h2>Goals</h2>
     <table border="1">
         <thead>
             <tr>
-                <th>Activity</th>
+                <th>Category</th>
                 <th>Start Time</th>
                 <th>End Time</th>
             </tr>
@@ -32,8 +70,176 @@
     <ul>
         {% for goal in goals %}
             <li>{{ goal.goal_type }} ({{ goal.start_time }} - {{ goal.end_time }}),
-                {{ goal.description }} <br> Completed = {{ goal.completed }}</li>
+                {{ goal.description }}</li>
         {% endfor %}
     </ul>
 <a href="{% url 'home' %}">Back to Home</a>
+</section>
+
+<section id="nutrition" class="tab-content" style="display:none;">
+       <h2>Nutrition Goals</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Target Food</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in nutrition_goals %}
+            <tr>
+                <td>{{ obj.goal.food.food_item }}</td>
+                <td>{{ obj.goal.start_time }}</td>
+                <td>{{ obj.goal.end_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Recent Goals</h3>
+    <ul>
+        {% for obj in nutrition_goals %}
+            <li>
+                ({{ obj.goal.start_time }} - {{ obj.goal.end_time }}), Range: {{ obj.goal.lower_grams }}-{{ obj.goal.upper_grams }} grams,
+                Description: {{ obj.goal.description }}
+                <p>Status: <span style="
+                    {% if obj.status == 'Under' %}
+                        color: orange;
+                    {% elif obj.status == 'Over' %}
+                        color: red;
+                    {% else %}
+                        color: green;
+                    {% endif %}
+                ">{{ obj.status }}</span></p>
+            <div style="width: 100%; background-color: #e0e0e0; border-radius: 8px; overflow: hidden; height: 20px; margin-bottom: 10px;">
+                <div style="
+                    width: {{obj.progress }}%;
+                    background-color:
+                        {% if obj.status == 'Under' %}
+                            orange;
+                        {% elif obj.status == 'Over' %}
+                            red;
+                        {% else %}
+                            green;
+                        {% endif %};
+                    height: 100%;
+                "></div>
+            </div>
+            <p>Progress: {{ obj.progress }}%</p>
+            </li>
+        {% endfor %}
+    </ul>
+<a href="{% url 'home' %}">Back to Home</a>
+</section>
+
+<section id="fitness" class="tab-content" style="display:none;">
+    <h2>Fitness Goals</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Activity</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Target Minutes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pair in fitness_goals %}
+            <tr>
+                <td>{{ pair.goal.activity }}</td>
+                <td>{{ pair.goal.start_time }}</td>
+                <td>{{ pair.goal.end_time }}</td>
+                <td>{{ pair.goal.target_minutes }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Progress Tracker</h3>
+    <ul>
+        {% for pair in fitness_goals %}
+            <li>({{ pair.goal.start_time }} - {{ pair.goal.end_time }}),
+            Target Minutes: {{ pair.goal.target_minutes }}, Description: {{ pair.goal.description }}
+                <div style="width: 50%; background-color: #e0e0e0;">
+                <div style="width: {{ pair.progress }}%; background-color: #4CAF50; height: 20px;">Progress
+                    = {{ pair.progress }}%
+                </div>
+                </div>
+
+            </li>
+        {% endfor %}
+    <a href="{% url 'home' %}">Back to Home</a>
+</section>
+
+<section id="sleep" class="tab-content" style="display:none;">
+    <h2>Sleep Goals</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in sleep_goals %}
+            <tr>
+                <td>{{ obj.goal.start_time }}</td>
+                <td>{{ obj.goal.end_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Recent Goals</h3>
+    <ul>
+        {% for obj in sleep_goals %}
+            <li>
+                ({{ obj.goal.start_time }} - {{ obj.goal.end_time }}), Total Target Hours: {{ obj.goal.target_hours }},
+                Target Quality: {{ obj.goal.target_quality }}, Description: {{ obj.goal.description }}
+                <div>
+                    <p>Total Sleep Progress (Hours):</p>
+                    <div style="width: 100%; background-color: #e0e0e0; border-radius: 8px;">
+                        <div style="width: {{ obj.progress }}%; background-color: #76c7c0; height: 20px; border-radius: 8px;"></div>
+                    </div>
+                    <p style="text-align: center;">{{ obj.progress|floatformat:2 }}% of your goal hours completed.</p>
+                </div>
+                <div>
+                    <p>Sleep Quality Comparison:</p>
+                    <div style="position: relative; width: 100%; background-color: #e0e0e0; height: 20px; border-radius: 8px;">
+                        <div style="position: absolute; left: {{ obj.target_10 }}%; width: 2px; height: 20px; background-color: #ff7f50;"></div>
+                        <div style="position: absolute; left: {{ obj.avg_10 }}%; width: 2px; height: 20px; background-color: #76c7c0;"></div>
+                    </div>
+                    <p style="text-align: center;">
+                        Target Quality: {{ obj.goal.target_quality }} | Average Quality: {{ obj.avg_quality }}
+                    </p>
+                </div>
+                <div style="font-size: 24px; text-align: center; margin: 10px 0;">
+                    {% if obj.avg_quality > obj.goal.target_quality %}
+                        <span>😀</span>
+                        <p style="font-size: 16px;">Great job!</p>
+                    {% elif obj.avg_quality == obj.goal.target_quality %}
+                        <span>😐</span>
+                        <p style="font-size: 16px;">Your average quality meets the target.</p>
+                    {% else %}
+                        <span>😭😭😭</span>
+                        <p style="font-size: 16px;">Get better sleep!</p>
+                    {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+<a href="{% url 'home' %}">Back to Home</a>
+</section>
+
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function openTab(tabId) {
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => tab.style.display = 'none');
+        document.getElementById(tabId).style.display = 'block';
+    }
+</script>
 {% endblock %}
