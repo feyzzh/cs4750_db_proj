@@ -18,7 +18,7 @@
         <thead>
             <tr>
                 <th style="display:none;">ID</th>
-                <th>Food ID</th>
+                <th>Food</th>
                 <th>Time</th>
                 <th>Grams</th>
                 <th>Source</th>
@@ -31,7 +31,7 @@
         {% for entry in nutrition_logs %}
             <tr>
                 <td style="display:none;">{{ entry.id }}</td>
-                <td>{{ entry.food_id }}</td>
+                <td>{{ entry.food.food_item }}</td>
                 <td>{{ entry.time_of_consumption }}</td>
                 <td>{{ entry.num_grams_consumed }}</td>
                 <td>{{ entry.source }}</td>

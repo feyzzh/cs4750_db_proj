@@ -452,7 +452,7 @@ def entry_manager(request):
     except Users.DoesNotExist:
         return render(request, 'error.html', {'message': 'User not found.'})
 
-    nutrition_logs = NutritionLog.objects.filter(user_id=user)
+    nutrition_logs = NutritionLog.objects.select_related('food').filter(user_id=user)
     fitness_logs = FitnessLog.objects.filter(user_id=user)
     sleep_logs = SleepLog.objects.filter(user_id=user)
 
