@@ -121,6 +121,15 @@
             </div>
         </div>
         <a href="{% url 'entry_manager' %}">My Entries</a>
+        <div class="dropdown">
+            <button class="dropbtn">Events
+              <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-content">
+                <a href="{% url 'add_event' %}">Create Event</a>
+                <a href="{% url 'events' %}">View Events</a>
+            </div>
+        </div>
         <a href="{% url 'profile' %}">Profile</a>
     </div>
 </nav>

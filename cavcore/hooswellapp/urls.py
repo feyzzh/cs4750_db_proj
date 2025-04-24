@@ -21,6 +21,10 @@ urlpatterns = [
     path('goals', views.view_goals, name='goals'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('entry_manager/', views.entry_manager, name='entry_manager'),
+    path('add_event/', views.add_event, name='add_event'),
+    path('events', views.view_events, name='events'),
+    path('enroll', views.enroll, name='enroll'),
+    path('delete-event/', views.delete_event, name='delete_event'),
     # path('update_entry/', views.update_entry, name='update_entry'),
     # path('delete_entry/', views.delete_entry, name='delete_entry'),
 

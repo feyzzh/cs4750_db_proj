@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm, GoalForm, NutritionGoalForm, FitnessGoalForm, SleepGoalForm
-from .models import NutritionLog, SleepLog, FitnessLog, Goals, NutritionGoals, FitnessGoals, SleepGoals
-
+from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm, GoalForm, NutritionGoalForm, \
+    FitnessGoalForm, SleepGoalForm, EventForm
+from .models import NutritionLog, SleepLog, FitnessLog, Goals, NutritionGoals, FitnessGoals, SleepGoals, Events, \
+    EventParticipants
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -650,4 +651,70 @@ def view_goals(request):
     }
     return render(request, 'goals.html', context)
 
+@login_required
+def add_event(request):
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            auth_user = request.user
+            try:
+                custom_user = Users.objects.get(email=auth_user.email)
+            except Users.DoesNotExist:
+                return HttpResponse("No matching user found.", status=400)
 
+            event.host = custom_user
+            event.save()
+            return redirect('home')
+    else:
+        form = FitnessLogForm()
+
+    return render(request, 'add_event.html', {'form': form})
+
+@login_required
+def view_events(request):
+    user_email = request.user.email
+    try:
+        user = Users.objects.get(email=user_email)
+    except Users.DoesNotExist:
+        return render(request, 'error.html', {'message': 'User not found.'})
+    events = Events.objects.order_by('-start_time')
+    hosted_events = Events.objects.filter(host=user)
+    enrolled_events = EventParticipants.objects.filter(participant=user)
+    context = {
+        'events': events,
+        'hosted': hosted_events,
+        'enrolled': enrolled_events
+    }
+    return render(request, 'events.html', context)
+
+@login_required
+def enroll(request):
+    if request.method == 'POST':
+        user_email = request.user.email
+        try:
+            user = Users.objects.get(email=user_email)
+        except Users.DoesNotExist:
+            return render(request, 'error.html', {'message': 'User not found.'})
+        event_id = request.POST.get('enroll_event_id')
+        event = Events.objects.get(event_id=event_id)
+        if not EventParticipants.objects.filter(event=event, participant=user).exists():
+            EventParticipants.objects.create(event=event, participant=user)
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+@login_required
+def delete_event(request):
+    if request.method == "POST":
+        user_email = request.user.email
+        try:
+            user = Users.objects.get(email=user_email)
+        except Users.DoesNotExist:
+            return render(request, 'error.html', {'message': 'User not found.'})
+        event_id = request.POST.get("delete_event_id")
+        event = Events.objects.get(event_id=event_id)
+        if event.host == user:
+            event.delete()
+            messages.success(request, "Event deleted successfully.")
+        else:
+            messages.error(request, "You do not have permission to delete this event.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))

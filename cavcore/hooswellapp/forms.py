@@ -1,6 +1,6 @@
 from django import forms
 from .models import NutritionLog, Foods, SleepLog, FitnessLog, Goals, NutritionGoals, FitnessGoals, SleepGoals
-from .models import Users
+from .models import Users, Events, EventParticipants
 from django.utils import timezone
 
 class SignupForm(forms.ModelForm):
@@ -121,6 +121,15 @@ class SleepGoalForm(forms.ModelForm):
     class Meta:
         model = SleepGoals
         fields = ['goal_type', 'start_time', 'end_time', 'completed', 'description', 'target_quality', 'target_hours']
+        widgets = {
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Events
+        fields = ['start_time', 'end_time', 'description']
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
