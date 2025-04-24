@@ -25,7 +25,8 @@ urlpatterns = [
     path('delete_event/', views.delete_event, name='delete_event'),
     path('resolve_event/', views.resolve_event, name='resolve_event'),
     path('goals_manager/', views.goals_manager, name='goals_manager'),
-    # path('update_entry/', views.update_entry, name='update_entry'),
-    # path('delete_entry/', views.delete_entry, name='delete_entry'),
-
+    path('update_entry/', views.update_entry, name='update_entry'),
+    path('delete_entry/', views.delete_entry, name='delete_entry'),
+    path('toggle_goal/<int:goal_id>/', views.toggle_goal, name='toggle_goal'),
+    path('delete_goal/<int:goal_id>/', views.delete_goal, name='delete_goal'),
 ]

@@ -150,7 +150,8 @@ class Events(models.Model):
 
 class FitnessLog(models.Model):
     pk = models.CompositePrimaryKey('user_id', 'start_time', 'end_time')
-    user = models.ForeignKey('Users', models.DO_NOTHING)
+    # user = models.ForeignKey('Users', models.DO_NOTHING)
+    user = models.ForeignKey('Users', on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     activity = models.TextField()
@@ -223,7 +224,8 @@ class SleepGoals(Goals):
         db_table = 'sleep_goals'
 class NutritionLog(models.Model):
     pk = models.CompositePrimaryKey('user_id', 'food_id', 'time_of_consumption')
-    user = models.ForeignKey('Users', models.DO_NOTHING)
+    # user = models.ForeignKey('Users', models.DO_NOTHING)
+    user = models.ForeignKey('Users', on_delete=models.CASCADE)
     food = models.ForeignKey(Foods, models.DO_NOTHING)
     time_of_consumption = models.DateTimeField()
     num_grams_consumed = models.IntegerField()
@@ -238,7 +240,8 @@ class NutritionLog(models.Model):
 
 class SleepLog(models.Model):
     pk = models.CompositePrimaryKey('user_id', 'start_time', 'end_time')
-    user = models.ForeignKey('Users', models.DO_NOTHING)
+    # user = models.ForeignKey('Users', models.DO_NOTHING)
+    user = models.ForeignKey('Users', on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     sleep_quality = models.IntegerField(blank=True, null=True)
@@ -254,7 +257,7 @@ class Users(models.Model):
     user_id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30, null=True)
-    email = models.TextField()
+    email = models.CharField(max_length=100)
     phone_number = models.TextField(blank=True, null=True)
     city = models.TextField(blank=True, null=True)
     state = models.TextField(blank=True, null=True)
