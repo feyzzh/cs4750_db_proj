@@ -37,8 +37,6 @@
                 <th>Grams</th>
                 <th>Source</th>
                 <th>Description</th>
-                <th>Edit</th>
-                <th>Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -50,8 +48,6 @@
                 <td>{{ entry.num_grams_consumed }}</td>
                 <td>{{ entry.source }}</td>
                 <td>{{ entry.description }}</td>
-                <td><button class="edit">Edit</button></td>
-                <td><button class="delete">Delete</button></td>
             </tr>
         {% endfor %}
         </tbody>
@@ -66,8 +62,6 @@
                 <th>End</th>
                 <th>Activity</th>
                 <th>Description</th>
-                <th>Edit</th>
-                <th>Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -78,8 +72,6 @@
                 <td>{{ entry.end_time|timezone:"America/New_York" }}</td>
                 <td>{{ entry.activity|timezone:"America/New_York" }}</td>
                 <td>{{ entry.description }}</td>
-                <td><button class="edit">Edit</button></td>
-                <td><button class="delete">Delete</button></td>
             </tr>
         {% endfor %}
         </tbody>
@@ -94,8 +86,6 @@
                 <th>End</th>
                 <th>Quality</th>
                 <th>Description</th>
-                <th>Edit</th>
-                <th>Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -106,8 +96,6 @@
                 <td>{{ entry.end_time|timezone:"America/New_York" }}</td>
                 <td>{{ entry.sleep_quality }}</td>
                 <td>{{ entry.description }}</td>
-                <td><button class="edit">Edit</button></td>
-                <td><button class="delete">Delete</button></td>
             </tr>
         {% endfor %}
         </tbody>
