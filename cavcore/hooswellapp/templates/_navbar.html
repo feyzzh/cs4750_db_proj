@@ -107,12 +107,11 @@
     </div>
     <div class="navbar-links">
         <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'goals' %}">Goals</a>
+        <a href="{% url 'goals_manager' %}">My Goals</a>
         <a href="{% url 'nutri_dash' %}">Dashboard</a>
+        
         <div class="dropdown">
-            <button class="dropbtn">Add Entry
-              <i class="fa fa-caret-down"></i>
-            </button>
+            <button class="dropbtn">Add Entry <i class="fas fa-caret-down"></i></button>
             <div class="dropdown-content">
                 <a href="{% url 'add_nutrition' %}">Nutrition</a>
                 <a href="{% url 'add_fitness_log' %}">Fitness</a>
@@ -120,25 +119,23 @@
                 <a href="{% url 'add_goal' %}">Goal</a>
             </div>
         </div>
+        
         <a href="{% url 'entry_manager' %}">My Entries</a>
+        
         <div class="dropdown">
-            <button class="dropbtn">Profile
-              <i class="fa fa-caret-down"></i>
-            </button>
-            <div class="dropdown-content">
-                <a href="{% url 'profile' %}">Profile</a>
-                <a href="{% url 'logout' %}">Logout</a>
-            </div>
-        </div>
-            <button class="dropbtn">Events
-              <i class="fa fa-caret-down"></i>
-            </button>
+            <button class="dropbtn">Events <i class="fas fa-caret-down"></i></button>
             <div class="dropdown-content">
                 <a href="{% url 'add_event' %}">Create Event</a>
                 <a href="{% url 'events' %}">View Events</a>
             </div>
         </div>
-        <a href="{% url 'goals_manager' %}">My Goals</a>
-        <a href="{% url 'profile' %}">Profile</a>
+        
+        <div class="dropdown">
+            <button class="dropbtn">Profile <i class="fas fa-caret-down"></i></button>
+            <div class="dropdown-content">
+                <a href="{% url 'profile' %}">Profile</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            </div>
+        </div>
     </div>
 </nav>
