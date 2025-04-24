@@ -17,10 +17,9 @@ urlpatterns = [
     path('nutri-dash/', views.nutrition_dashboard, name='nutri_dash'),
     path('fit-dash/', views.fitness_dashboard, name='fit_dash'),
     path('sleep-dash/', views.sleep_dashboard, name='sleep_dash'),
-    path('dashboard/', views.dashboard, name='dashboard'),
     path('goals', views.view_goals, name='goals'),
-    path('dashboard/', views.dashboard, name='dashboard'),
     path('entry_manager/', views.entry_manager, name='entry_manager'),
+    path('goals_manager/', views.goals_manager, name='goals_manager'),
     # path('update_entry/', views.update_entry, name='update_entry'),
     # path('delete_entry/', views.delete_entry, name='delete_entry'),
 
