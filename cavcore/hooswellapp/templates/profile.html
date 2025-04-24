@@ -157,10 +157,10 @@
             {% for goal in goals %}
             <div class="goal-card">
                 <div class="goal-info">
-                    <h3>{{ goal.goal_type }}</h3>
+                    <h3>{{ goal.description }}</h3>
                     <p><strong>Period:</strong> {{ goal.start_time|date:"M d, Y" }} 
                         {% if goal.end_time %}to {{ goal.end_time|date:"M d, Y" }}{% endif %}</p>
-                    <p><strong>Description:</strong> {{ goal.description }}</p>
+                    <p><strong>Goal Type:</strong> {{ goal.goal_type }}</p>
                     <p><strong>Status:</strong> 
                         <span class="status-{% if goal.completed %}completed{% else %}pending{% endif %}">
                             {% if goal.completed %}Completed{% else %}In Progress{% endif %}
