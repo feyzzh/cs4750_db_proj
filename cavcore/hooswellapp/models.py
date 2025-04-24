@@ -177,10 +177,17 @@ class Foods(models.Model):
 
 
 class Goals(models.Model):
+    GOAL_TYPE_CHOICES = [
+        ('fitness', 'Fitness'),
+        ('nutrition', 'Nutrition'),
+        ('sleep', 'Sleep'),
+        ('wellness', 'Wellness'),
+    ]
+
     # pk = models.CompositePrimaryKey('goal_id', 'user_id')
     goal_id = models.AutoField(primary_key=True)
     user = models.ForeignKey('Users', models.DO_NOTHING)
-    goal_type = models.CharField(max_length=20)
+    goal_type = models.CharField(max_length=20, choices=GOAL_TYPE_CHOICES)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(blank=True, null=True)
     completed = models.BooleanField()
