@@ -1,0 +1,189 @@
+{% load static %}
+{% include 'base.html' %}
+
+<head>
+    <title>User Goals</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        table {
+            margin-bottom: 50px;
+        }
+    </style>
+</head>
+
+{% block content %}
+    <h1>Nutrition Goals</h1>
+    <table id="nutrition" class="display">
+        <thead>
+            <tr>
+                <th style="display:none;">ID</th>
+                <th>Food ID</th>
+                <th>Lower Grams</th>
+                <th>Upper Grams</th>
+                <th>Description</th>
+                <th>Completed</th>
+                <th>Check Done</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in nutrition_goals %}
+            <tr>
+                <td style="display:none;">{{ entry.pk }}</td>
+                <td>{{ entry.food.food_item }}</td>
+                <td>{{ entry.lower_grams }}</td>
+                <td>{{ entry.upper_grams }}</td>
+                <td>{{ entry.description }}</td>
+                <td>{{ entry.completed }}</td>
+                <td><button class="finished">Done</button></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Fitness Goals</h1>
+    <table id="fitness" class="display">
+        <thead>
+            <tr>
+                <th style="display:none;">ID</th>
+                <th>Activity</th>
+                <th>Target Minutes</th>
+                <th>Description</th>
+                <th>Completed</th>
+                <th>Check Done</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in fitness_goals %}
+            <tr>
+                <td style="display:none;">{{ entry.pk }}</td>
+                <td>{{ entry.activity }}</td>
+                <td>{{ entry.target_minutes }}</td>
+                <td>{{ entry.description }}</td>
+                <td>{{ entry.completed }}</td>
+                <td><button class="finished">Done</button></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Sleep Goals</h1>
+    <table id="sleep" class="display">
+        <thead>
+            <tr>
+                <th style="display:none;">ID</th>
+                <th>Target Quality</th>
+                <th>Target Hours</th>
+                <th>Description</th>
+                <th>Completed</th>
+                <th>Check Done</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in sleep_goals %}
+            <tr>
+                <td style="display:none;">{{ entry.pk }}</td>
+                <td>{{ entry.target_quality }}</td>
+                <td>{{ entry.target_hours }}</td>
+                <td>{{ entry.description }}</td>
+                <td>{{ entry.completed }}</td>
+                <td><button class="finished">Done</button></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Wellness Goals</h1>
+    <table id="wellness" class="display">
+        <thead>
+            <tr>
+                <th style="display:none;">ID</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Description</th>
+                <th>Completed</th>
+                <th>Check Done</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in wellness_goals %}
+            <tr>
+                <td style="display:none;">{{ entry.pk }}</td>
+                <td>{{ entry.start_time }}</td>
+                <td>{{ entry.end_time }}</td>
+                <td>{{ entry.description }}</td>
+                <td>{{ entry.completed }}</td>
+                <td><button class="finished">Done</button></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Modal for editing -->
+    <div id="editModal" style="display:none;">
+        <input type="hidden" name="id">
+        <label for="description">Description:</label>
+        <input type="text" name="description">
+        <button id="saveChanges">Save</button>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function () {
+        const tables = {
+            '#nutrition': $('#nutrition').DataTable({ columnDefs: [{ targets: 0, visible: false }] }),
+            '#fitness': $('#fitness').DataTable({ columnDefs: [{ targets: 0, visible: false }] }),
+            '#sleep': $('#sleep').DataTable({ columnDefs: [{ targets: 0, visible: false }] }),
+            '#wellness': $('#wellness').DataTable({ columnDefs: [{ targets: 0, visible: false }] }),
+        };
+
+        Object.entries(tables).forEach(([selector, table]) => {
+            $(selector).on('click', '.edit', function () {
+                const row = table.row($(this).closest('tr')).data();
+                $('#editModal input[name="id"]').val(row[0]);
+                $('#editModal input[name="description"]').val(row[4] || row[3]); // Depends on table
+                $('#editModal').show();
+            });
+
+            $(selector).on('click', '.delete', function () {
+                const row = table.row($(this).closest('tr')).data();
+                const id = row[0];
+                if (confirm('Are you sure you want to delete this entry?')) {
+                    $.ajax({
+                        url: '/delete_entry/',
+                        method: 'POST',
+                        data: {
+                            id: id,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function () {
+                            table.row($(this).closest('tr')).remove().draw();
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#saveChanges').on('click', function () {
+            const id = $('#editModal input[name="id"]').val();
+            const description = $('#editModal input[name="description"]').val();
+
+            $.ajax({
+                url: '/update_entry/',
+                method: 'POST',
+                data: {
+                    id: id,
+                    description: description,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function () {
+                    location.reload();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

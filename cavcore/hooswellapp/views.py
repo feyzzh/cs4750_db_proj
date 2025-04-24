@@ -248,21 +248,6 @@ def stats_dashboard(request):
     return render(request, 'stats_dashboard.html', context)
 
 
-@login_required
-def dashboard(request):
-
-    user_email = request.user.email
-    try:
-        user = Users.objects.get(email=user_email)
-    except Users.DoesNotExist:
-        return render(request, 'error.html', {'message': 'User not found.'})
-
-    context = {
-
-    }
-
-    return render(request, 'dashboard.html', context)
-
 from datetime import datetime, timedelta
 from collections import defaultdict
 import json
@@ -466,6 +451,26 @@ def entry_manager(request):
         'nutrition_logs': nutrition_logs,
         'fitness_logs': fitness_logs,
         'sleep_logs': sleep_logs,
+    })
+
+@login_required
+def goals_manager(request):
+    user_email = request.user.email
+    try:
+        user = Users.objects.get(email=user_email)
+    except Users.DoesNotExist:
+        return render(request, 'error.html', {'message': 'User not found.'})
+
+    nutrition_goals = NutritionGoals.objects.select_related('goals_ptr', 'food').filter(goals_ptr__user_id=user.user_id)
+    fitness_goals = FitnessGoals.objects.select_related('goals_ptr').filter(goals_ptr__user_id=user.user_id)
+    sleep_goals = SleepGoals.objects.select_related('goals_ptr').filter(goals_ptr__user_id=user.user_id)
+    wellness_goals = Goals.objects.filter(user_id=user.user_id, goal_type='wellness')
+
+    return render(request, 'goal_manager.html', {
+        'nutrition_goals': nutrition_goals,
+        'fitness_goals': fitness_goals,
+        'sleep_goals': sleep_goals,
+        'wellness_goals': wellness_goals,
     })
 
 # from django.http import JsonResponse
