@@ -58,7 +58,7 @@
                 <td style="display:none;">{{ entry.id }}</td>
                 <td>{{ entry.start_time }}</td>
                 <td>{{ entry.end_time|timezone:"America/New_York" }}</td>
-                <td>{{ entry.activity|timezone:"America/New_York" }}</td>
+                <td>{{ entry.activity }}</td>
                 <td>{{ entry.description }}</td>
             </tr>
         {% endfor %}
