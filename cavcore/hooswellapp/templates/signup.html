@@ -1,16 +1,70 @@
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Sign Up</title>
-</head>
-<body>
+{% block content %}
+<div class="auth-container">
     <h2>Sign Up</h2>
-    <form method="post">
+    {% if messages %}
+        {% for message in messages %}
+            <p class="error-message">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+    <form method="post" class="form-group">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Sign Up">
+        <input type="submit" value="Sign Up" class="auth-button">
     </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
-</body>
-</html>
+    <p class="auth-link">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+</div>
+
+<style>
+    .auth-container {
+        max-width: 400px;
+        margin: 40px auto;
+        padding: 10px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(114, 114, 114, 0.1);
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group input {
+        border: 1px solid #ddd;
+        font-size: 16px;
+    }
+
+    .auth-button {
+        background-color: #007bff;
+        color: white;
+        padding: 6px;
+        cursor: pointer;
+        font-size: 15px;
+        margin-top: 10px;
+    }
+
+    .auth-button:hover {
+        background-color: #0069d9;
+    }
+
+    .auth-link {
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    .auth-link a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .auth-link a:hover {
+        text-decoration: underline;
+    }
+
+    .error-message {
+        color: #dc3545;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}

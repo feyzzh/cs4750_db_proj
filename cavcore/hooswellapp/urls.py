@@ -15,10 +15,11 @@ urlpatterns = [
     path('stats/', views.stats_dashboard, name='stats_dashboard'),
     path('nutri-dash/', views.nutrition_dashboard, name='nutri_dash'),
     path('dashboard/', views.dashboard, name='dashboard'),
-    path('goals', views.view_goals, name='goals'),
+    path('goals/', views.view_goals, name='goals'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('entry_manager/', views.entry_manager, name='entry_manager'),
-    # path('update_entry/', views.update_entry, name='update_entry'),
-    # path('delete_entry/', views.delete_entry, name='delete_entry'),
-
+    path('update_entry/', views.update_entry, name='update_entry'),
+    path('delete_entry/', views.delete_entry, name='delete_entry'),
+    path('toggle_goal/<int:goal_id>/', views.toggle_goal, name='toggle_goal'),
+    path('delete_goal/<int:goal_id>/', views.delete_goal, name='delete_goal'),
 ]

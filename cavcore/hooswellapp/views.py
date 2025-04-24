@@ -2,17 +2,18 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import NutritionLogForm, SleepLogForm, FitnessLogForm, FoodItemForm, GoalForm
 from .models import NutritionLog, SleepLog, FitnessLog, Goals
-
-
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from .models import Users
 from .forms import SignupForm
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db.models import Sum, Avg, Count
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.dateparse import parse_datetime
 
-# Create your views here.
+
 def home(request):
     return render(request, 'home.html')
 
@@ -22,7 +23,6 @@ def signup_view(request):
         if form.is_valid():
             user_data = form.cleaned_data
 
-            # Create auth_user entry
             auth_user = User.objects.create_user(
                 username=user_data['email'],  # Using email as username
                 email=user_data['email'],
@@ -31,7 +31,6 @@ def signup_view(request):
                 last_name=user_data['last_name'],
             )
 
-            # Create Users entry
             Users.objects.create(
                 first_name=user_data['first_name'],
                 last_name=user_data['last_name'],
@@ -52,7 +51,7 @@ def signup_view(request):
 
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST.get('username')  # Will be email in this setup
+        username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
 
@@ -73,10 +72,11 @@ def profile(request):
     auth_user = request.user
     try:
         custom_user = Users.objects.get(email=auth_user.email)
+        user_goals = Goals.objects.filter(user=custom_user).order_by('-start_time')
     except Users.DoesNotExist:
         return HttpResponse("No matching user found.", status=400)
 
-    return render(request, 'profile.html', {'profile': custom_user})
+    return render(request, 'profile.html', {'profile': custom_user, 'goals': user_goals})
 
 @login_required
 def add_food(request):
@@ -305,12 +305,10 @@ def nutrition_dashboard(request):
 
     total_grams_week = sum(entry['num_grams_consumed'] for entry in weekly_logs)
 
-    # Serialize grouped logs for JavaScript
     nutrition_logs_json = json.dumps(nutrition_logs_by_date, cls=DjangoJSONEncoder)
 
     nutrition_logs = NutritionLog.objects.filter(user=user).order_by('-time_of_consumption')
 
-    # Calculate the weekly grams per day
     weekly_grams_per_day = []
 
     for offset in range(7):
@@ -356,105 +354,72 @@ def entry_manager(request):
         'sleep_logs': sleep_logs,
     })
 
-# from django.http import JsonResponse
-# from django.views.decorators.csrf import csrf_exempt
-# from django.db import connection
-# import json
+@require_POST
+@csrf_exempt
+def update_entry(request):
+    try:
+        entry_type = request.POST.get('type')
+        user_pk = request.POST.get('user_pk')
+        other_pks = request.POST.get('other_pks').split(',')
+        description = request.POST.get('description')
+        auth_user = request.user
 
+        try:
+            custom_user = Users.objects.get(email=auth_user.email)
+        except Users.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'User not found'})
 
-# @csrf_exempt
-# def update_entry(request):
-#     if request.method == 'POST':
-#         # Get the incoming data (JSON)
-#         data = json.loads(request.body)
-#         entry_id = data.get('id')
-#         description = data.get('description')
-
-#         # Determine the correct table and primary key logic based on the ID passed (for each table)
-#         table = data.get('table')
+        if entry_type == 'nutrition':
+            food_id = int(other_pks[0])
+            time_of_consumption = parse_datetime(other_pks[1])
+            entry = get_object_or_404(NutritionLog, user=custom_user, food_id=food_id, time_of_consumption=time_of_consumption)
+            entry.description = description
+            entry.save()
+        elif entry_type == 'fitness':
+            entry = get_object_or_404(FitnessLog, user=custom_user, start_time=other_pks[0], end_time=other_pks[1])
+            entry.description = description
+            entry.save()
+        elif entry_type == 'sleep':
+            entry = get_object_or_404(SleepLog, user=custom_user, start_time=other_pks[0], end_time=other_pks[1])
+            entry.description = description
+            entry.save()
         
-#         # Construct raw SQL queries for each type of log (nutrition, fitness, sleep)
-#         if table == 'nutrition_log':
-#             query = """
-#                 UPDATE nutrition_log
-#                 SET description = %s
-#                 WHERE user_id = %s AND food_id = %s AND time_of_consumption = %s
-#             """
-#             # You need to extract the composite key (user_id, food_id, and time_of_consumption)
-#             user_id, food_id, time_of_consumption = get_composite_key_values(entry_id)
-#         elif table == 'fitness_log':
-#             query = """
-#                 UPDATE fitness_log
-#                 SET description = %s
-#                 WHERE user_id = %s AND start_time = %s AND end_time = %s
-#             """
-#             # Extract the composite key (user_id, start_time, end_time)
-#             user_id, start_time, end_time = get_composite_key_values(entry_id)
-#         elif table == 'sleep_log':
-#             query = """
-#                 UPDATE sleep_log
-#                 SET description = %s
-#                 WHERE user_id = %s AND start_time = %s AND end_time = %s
-#             """
-#             # Extract the composite key (user_id, start_time, end_time)
-#             user_id, start_time, end_time = get_composite_key_values(entry_id)
-#         else:
-#             return JsonResponse({'success': False, 'error': 'Invalid table name'})
+        return JsonResponse({'success': True})
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
-#         # Execute the raw SQL query
-#         try:
-#             with connection.cursor() as cursor:
-#                 cursor.execute(query, [description, user_id, food_id, time_of_consumption])
-#             return JsonResponse({'success': True})
-#         except Exception as e:
-#             return JsonResponse({'success': False, 'error': str(e)})
+@require_POST
+@csrf_exempt
+def delete_entry(request):
+    try:
+        entry_type = request.POST.get('type')
+        user_pk = request.POST.get('user_pk')
+        other_pks = request.POST.get('other_pks').split(',')
+        auth_user = request.user
+
+        try:
+            custom_user = Users.objects.get(email=auth_user.email)
+        except Users.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'User not found'})
+
+        if entry_type == 'nutrition':
+            food_id = int(other_pks[0])
+            time_of_consumption = parse_datetime(other_pks[1])
+            entry = get_object_or_404(NutritionLog, user=custom_user, food_id=food_id, time_of_consumption=time_of_consumption)
+            entry.delete()
+        elif entry_type == 'fitness':
+            entry = get_object_or_404(FitnessLog,user=custom_user, start_time=other_pks[0], end_time=other_pks[1])
+            entry.delete()
+        elif entry_type == 'sleep':
+            entry = get_object_or_404(SleepLog, user=custom_user, start_time=other_pks[0], end_time=other_pks[1])
+            entry.delete()
         
-#     def get_composite_key_values(entry_id):
-#         # Example function, customize this based on your schema and logic
-#         # For example, you may need to split `entry_id` or retrieve them from another table.
-#         return (user_id, food_id, time_of_consumption)  # Return the required composite key values
+        return JsonResponse({'success': True})
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
-# @csrf_exempt
-# def delete_entry(request):
-#     if request.method == 'POST':
-#         # Get the incoming data (JSON)
-#         data = json.loads(request.body)
-#         entry_id = data.get('id')
-#         table = data.get('table')
-
-#         # Construct SQL queries for each type of log (nutrition, fitness, sleep)
-#         if table == 'nutrition_log':
-#             query = """
-#                 DELETE FROM nutrition_log
-#                 WHERE user_id = %s AND food_id = %s AND time_of_consumption = %s
-#             """
-#             user_id, food_id, time_of_consumption = get_composite_key_values(entry_id)
-#         elif table == 'fitness_log':
-#             query = """
-#                 DELETE FROM fitness_log
-#                 WHERE user_id = %s AND start_time = %s AND end_time = %s
-#             """
-#             user_id, start_time, end_time = get_composite_key_values(entry_id)
-#         elif table == 'sleep_log':
-#             query = """
-#                 DELETE FROM sleep_log
-#                 WHERE user_id = %s AND start_time = %s AND end_time = %s
-#             """
-#             user_id, start_time, end_time = get_composite_key_values(entry_id)
-#         else:
-#             return JsonResponse({'success': False, 'error': 'Invalid table name'})
-
-#         try:
-#             with connection.cursor() as cursor:
-#                 cursor.execute(query, [user_id, food_id, time_of_consumption])
-#             return JsonResponse({'success': True})
-#         except Exception as e:
-#             return JsonResponse({'success': False, 'error': str(e)})
-        
-#     def get_composite_key_values(entry_id):
-#         # Example function, customize this based on your schema and logic
-#         # For example, you may need to split `entry_id` or retrieve them from another table.
-#         return (user_id, food_id, time_of_consumption)  # Return the required composite key values
 
 @login_required
 def view_goals(request):
@@ -471,3 +436,28 @@ def view_goals(request):
         'goals': goals
     }
     return render(request, 'goals.html', context)
+
+@login_required
+def toggle_goal(request, goal_id):
+    if request.method == 'POST':
+        try:
+            auth_user = request.user
+            custom_user = Users.objects.get(email=auth_user.email)
+            goal = get_object_or_404(Goals, goal_id=goal_id, user=custom_user)
+            goal.completed = not goal.completed
+            goal.save()
+            return redirect('profile')
+        except Exception as e:
+            return redirect('profile')
+
+@login_required
+def delete_goal(request, goal_id):
+    if request.method == 'POST':
+        try:
+            auth_user = request.user
+            custom_user = Users.objects.get(email=auth_user.email)
+            goal = get_object_or_404(Goals, goal_id=goal_id, user=custom_user)
+            goal.delete()
+            return redirect('profile')
+        except Exception as e:
+            return redirect('profile')
