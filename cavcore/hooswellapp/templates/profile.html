@@ -1,8 +1,86 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+        background-color: #fff;
+        margin: 10% auto;
+        padding: 30px;
+        border: 1px solid #888;
+        width: 50%;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .modal-content h2 {
+        margin-top: 0;
+    }
+
+    .modal-content input[type="text"],
+    .modal-content input[type="email"] {
+        width: 100%;
+        padding: 8px 10px;
+        margin: 8px 0 16px 0;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
+    .modal-content button[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 18px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .modal-content button[type="submit"]:hover {
+        background-color: #45a049;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
-<h2>User Profile</h2>
+<div class="header-row" style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>User Profile</h2>
+    <button id="editBtn" style="
+        padding: 8px 16px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 14px;"
+        >
+        Edit Profile
+    </button>
+</div>
 <ul>
     <li><strong>First Name:</strong> {{ profile.first_name }}</li>
     <li><strong>Last Name:</strong> {{ profile.last_name }}</li>
@@ -13,4 +91,68 @@
     <li><strong>Country:</strong> {{ profile.country }}</li>
 </ul>
 
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3>Edit Profile</h3>
+        <form method="POST" id="editProfileForm">
+            {% csrf_token %}
+            <label>First Name:</label><br>
+            <input type="text" name="first_name" value="{{ profile.first_name }}"><br>
+
+            <label>Last Name:</label><br>
+            <input type="text" name="last_name" value="{{ profile.last_name }}"><br>
+
+            <label>Email:</label><br>
+            <input type="email" name="email" value="{{ profile.email }}" readonly style="background-color: #f0f0f0; color: #777;"><br>
+
+            <label>Phone Number:</label><br>
+            <input type="text" name="phone_number" value="{{ profile.phone_number }}"><br>
+
+            <label>City:</label><br>
+            <input type="text" name="city" value="{{ profile.city }}"><br>
+
+            <label>State:</label><br>
+            <input type="text" name="state" value="{{ profile.state }}"><br>
+
+            <label>Country:</label><br>
+            <input type="text" name="country" value="{{ profile.country }}"><br><br>
+
+            <button type="submit">Save</button>
+            <button type="button" onclick="closeModal()" style="
+                background-color: #4ca3af;
+                color: white;
+                padding: 10px 18px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                margin-left: 10px;
+            ">Cancel</button>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const modal = document.getElementById("editModal");
+    const editBtn = document.getElementById("editBtn");
+
+    editBtn.onclick = function() {
+        modal.style.display = "block";
+    }
+
+    function closeModal() {
+        modal.style.display = "none";
+    }
+
+    // Close when clicking outside modal
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+</script>
 {% endblock %}

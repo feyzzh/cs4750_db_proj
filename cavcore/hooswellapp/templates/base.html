@@ -3,9 +3,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- <title>{% block title %}My App{% endblock %}</title> -->
+    <title>{% block title %}HoosWell{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'base.css' %}">
 
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
     {% include '_navbar.html' %}

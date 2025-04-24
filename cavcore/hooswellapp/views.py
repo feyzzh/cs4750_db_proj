@@ -78,6 +78,16 @@ def profile(request):
     except Users.DoesNotExist:
         return HttpResponse("No matching user found.", status=400)
 
+    if request.method == "POST":
+        # Only update fields if a new value is submitted
+        for field in ['first_name', 'last_name', 'phone_number', 'city', 'state', 'country']:
+            value = request.POST.get(field)
+            if value and value != getattr(custom_user, field):
+                setattr(custom_user, field, value)
+
+        custom_user.save()
+        return redirect('profile')
+
     return render(request, 'profile.html', {'profile': custom_user})
 
 @login_required
